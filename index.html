@@ -204,9 +204,9 @@ function arreter(){
   if (stream) stream.getTracks().forEach(t=>t.stop());
 }
 async function demarrer_micro(){
-  annule=false;
+  annule=false; $("#errm").textContent="Je demande le micro…";
   try { stream = await navigator.mediaDevices.getUserMedia({audio:true}); }
-  catch(e){ $("#errm").textContent="Micro refusé. Autorise-le dans le navigateur, ou tape à la place."; return voir("v-err"); }
+  catch(e){ $("#errm").textContent="Micro impossible ("+(e&&e.name||"erreur")+"). Ouvre le site directement dans ton navigateur (pas depuis WhatsApp), vérifie l'autorisation du micro, ou tape à la place."; return voir("v-err"); }
   const mime = ["audio/webm","audio/mp4"].find(m=>window.MediaRecorder && MediaRecorder.isTypeSupported(m));
   try { rec = new MediaRecorder(stream, mime?{mimeType:mime}:undefined); }
   catch(e){ $("#errm").textContent="Ce téléphone ne peut pas enregistrer ici. Tape à la place."; return voir("v-err"); }
