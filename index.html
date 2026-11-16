@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14532d">
+<title>AGRI-MARGE</title>
+<style>
+:root{--bg:#f5f4ef;--tx:#1b1d1a;--mu:#5a5d56;--ac:#1f7a4d;--on:#fff;--ln:#e2e1da;--hero:#14532d;--hon:#fff;--card:#fff}
+@media(prefers-color-scheme:dark){:root{--bg:#101211;--tx:#f1f1ec;--mu:#a2a59d;--ac:#5fd08f;--on:#0d1f15;--ln:#2a2d2a;--hero:#173b28;--hon:#eaf7ef;--card:#1a1d1b}}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--tx);font:400 16px/1.4 -apple-system,"SF Pro Text",Roboto,system-ui,sans-serif;max-width:480px;margin:auto;padding:calc(16px + env(safe-area-inset-top)) 16px calc(176px + env(safe-area-inset-bottom))}
+.hide{display:none!important}
+.mu{color:var(--mu)}
+.h{font-size:20px;font-weight:600}
+.top{display:flex;align-items:center;gap:8px;margin-bottom:16px}
+.logo{display:grid;grid-template-columns:repeat(3,8px);gap:2px}
+.logo i{width:8px;height:8px;border-radius:2px;background:var(--ac)}
+.logo i:nth-child(5){opacity:.35}
+.hero{background:var(--hero);color:var(--hon);border-radius:16px;padding:24px 16px;min-height:160px}
+.dim{opacity:.85}
+.big{font-size:44px;font-weight:600;line-height:1.1;margin:8px 0}
+.sk{height:44px;width:70%;margin:8px 0;border-radius:12px;background:linear-gradient(90deg,rgba(128,128,128,.2),rgba(128,128,128,.4),rgba(128,128,128,.2));background-size:200% 100%;animation:sk 1.2s linear infinite}
+@keyframes sk{to{background-position:-200% 0}}
+.sec{margin-top:32px}
+.row{display:flex;justify-content:space-between;gap:16px;padding:16px 0;border-bottom:1px solid var(--ln)}
+.btn{min-height:48px;border:0;border-radius:14px;background:var(--ac);color:var(--on);font:inherit;font-weight:600;padding:0 24px;transition:transform .15s,opacity .15s}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.6}
+.btn.s{background:transparent;color:var(--mu)}
+.bar{position:fixed;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;gap:4px;padding:24px 16px calc(12px + env(safe-area-inset-bottom));background:linear-gradient(transparent,var(--bg) 40%)}
+.mic{width:80px;height:80px;border-radius:50%;border:0;background:var(--ac);color:var(--on);display:grid;place-items:center;transition:transform .15s}
+.mic:active{transform:scale(.94)}
+.mic svg{width:32px;height:32px}
+.link{background:none;border:0;color:var(--mu);font:inherit;min-height:44px;padding:0 16px;text-decoration:underline}
+dialog{border:0;border-radius:16px;background:var(--card);color:var(--tx);width:calc(100% - 32px);max-width:448px;padding:24px 16px;margin:auto auto 16px}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+.acts{display:flex;gap:8px;margin-top:24px}.acts .btn{flex:1;padding:0 8px}
+.pulse{width:64px;height:64px;border-radius:50%;background:var(--ac);margin:24px auto;animation:p 1.2s ease-in-out infinite}
+@keyframes p{50%{transform:scale(1.25);opacity:.55}}
+label{display:block;margin:16px 0 8px}
+select,input{font:inherit;color:inherit;width:100%;min-height:48px;border:1px solid var(--ln);border-radius:12px;background:var(--bg);padding:0 16px}
+#toast{position:fixed;left:16px;right:16px;top:calc(16px + env(safe-area-inset-top));max-width:448px;margin:auto;background:var(--tx);color:var(--bg);border-radius:14px;padding:12px 16px;opacity:0;transform:translateY(-8px);transition:.25s;pointer-events:none}
+#toast.on{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="top"><span class="logo"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><b class="h">AGRI-MARGE</b></div>
+
+<section class="hero" aria-live="polite">
+  <p class="dim">Ton bilan</p>
+  <div id="sk" class="sk"></div>
+  <p id="big" class="big hide">0 F</p>
+  <p id="sub" class="dim hide"></p>
+  <div id="err" class="hide"><p id="errt"></p><button class="btn" id="retry" style="margin-top:16px">Réessayer</button></div>
+</section>
+
+<section class="sec hide" id="empty">
+  <p class="h">Rien d'enregistré</p>
+  <p class="mu" style="margin-top:8px">Touche le micro et dis ta première dépense, par exemple le labour.</p>
+</section>
+
+<section class="sec hide" id="detail">
+  <p class="h">D'où part l'argent</p>
+  <div class="row"><span>Dépenses</span><b id="d"></b></div>
+  <div class="row"><span>Récolte (valeur)</span><b id="r"></b></div>
+  <div class="row"><span>Pertes (manque à gagner)</span><b id="p"></b></div>
+</section>
+
+<section class="sec hide" id="list"><p class="h">Derniers ajouts</p><div id="items"></div></section>
+
+<div class="bar">
+  <button class="mic" id="mic" aria-label="Parler"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/></svg></button>
+  <button class="link" id="type">Taper à la place</button>
+</div>
+<div id="toast" role="status"></div>
+
+<dialog id="dlg">
+  <div id="v-rec" class="v hide"><p class="h">Je t'écoute…</p><div class="pulse"></div><p class="mu">Parle, puis touche « Terminer ».</p>
+    <div class="acts"><button class="btn s" id="rcancel">Annuler</button><button class="btn" id="rstop">Terminer</button></div></div>
+  <div id="v-wait" class="v hide"><p class="h">Je comprends…</p><div class="sk" style="margin-top:16px"></div><div class="sk" style="width:50%"></div></div>
+  <div id="v-ok" class="v hide"><p class="mu">Tu as dit</p><p id="said"></p><p class="h" id="what" style="margin:16px 0 8px"></p><p>C'est bon ?</p>
+    <div class="acts"><button class="btn s" id="fix">Corriger</button><button class="btn" id="yes">Oui, enregistrer</button></div></div>
+  <div id="v-err" class="v hide"><p id="errm"></p>
+    <div class="acts"><button class="btn s" id="e-type">Taper</button><button class="btn" id="e-again">Réessayer</button></div></div>
+  <form id="v-form" class="v hide">
+    <p class="h">Ajout à la main</p>
+    <label for="t">Quoi ?</label>
+    <select id="t"><option value="depense">Dépense</option><option value="recolte">Récolte</option><option value="perte">Perte</option></select>
+    <div id="fc"><label for="c">Catégorie</label><select id="c"></select></div>
+    <div id="fm"><label for="m">Montant (FCFA)</label><input id="m" type="number" inputmode="numeric" min="1" max="1000000000" step="1"></div>
+    <div id="fk" class="hide"><label for="k">Quantité (kg)</label><input id="k" type="number" inputmode="decimal" min="0.1" max="1000000" step="any">
+      <label for="p2">Prix du kilo (FCFA)</label><input id="p2" type="number" inputmode="numeric" min="1" max="1000000" step="1"></div>
+    <p id="ferr" class="hide" style="margin-top:16px" role="alert"></p>
+    <div class="acts"><button type="button" class="btn s" id="cancel">Annuler</button><button class="btn" id="save" type="submit">Enregistrer</button></div>
+  </form>
+</dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+const sb = supabase.createClient("https://cpfwlkawfibxbscbrckm.supabase.co", "sb_publishable_KJBo_HeYBlDpR6QKC1pnyQ_taqrJm3q");
+const $ = s => document.querySelector(s);
+const F = n => new Intl.NumberFormat("fr-FR").format(Math.round(n)) + " F";
+const CATS = {
+  depense: [["labour","Labour"],["semis","Semis"],["herbicide","Herbicide"],["autre","Autre"]],
+  recolte: [["recolte","Récolte"]],
+  perte: [["inondation","Inondation"],["vol","Vol"],["pourriture","Pourriture"],["autre","Autre"]]
+};
+const TYPES = {depense:"Dépense", recolte:"Récolte", perte:"Perte"};
+const LBL = {}; Object.values(CATS).flat().forEach(([v,l])=>LBL[v]=l);
+let shown = 0, cur = null, rec = null, stream = null, chunks = [], annule = false, stopT = null;
+
+function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("on");setTimeout(()=>e.classList.remove("on"),2500)}
+function voir(id){
+  document.querySelectorAll(".v").forEach(v=>v.classList.add("hide"));
+  $("#"+id).classList.remove("hide");
+  if(!$("#dlg").open) $("#dlg").showModal();
+}
+function texte(m){
+  return TYPES[m.type]+" · "+LBL[m.categorie]+" · "+(m.type==="depense" ? F(m.montant_fcfa) : m.quantite_kg+" kg × "+F(m.prix_kg_fcfa));
+}
+function count(to){
+  const el=$("#big"), from=shown, t0=performance.now();
+  (function step(t){const k=Math.min((t-t0)/300,1);const v=from+(to-from)*k;el.textContent=(v<0?"−":"")+F(Math.abs(v));if(k<1)requestAnimationFrame(step)})(t0);
+  shown=to;
+}
+function etat(e){
+  $("#sk").classList.toggle("hide", e!=="load");
+  $("#err").classList.toggle("hide", e!=="err");
+  for (const id of ["big","sub"]) $("#"+id).classList.toggle("hide", e!=="ok");
+  if (e!=="ok") for (const id of ["detail","list","empty"]) $("#"+id).classList.add("hide");
+}
+function erreur(m){ $("#errt").textContent=m; etat("err"); }
+
+async function charger(){
+  etat("load");
+  const [b,l] = await Promise.all([
+    sb.from("bilan").select("*").maybeSingle(),
+    sb.from("mouvements").select("*").order("created_at",{ascending:false}).limit(5)
+  ]);
+  if (b.error || l.error) return erreur("Impossible de charger. Vérifie ton réseau.");
+  etat("ok");
+  const rows = l.data || [], vide = rows.length === 0;
+  const dep = Number(b.data?.depenses||0), rec_ = Number(b.data?.valeur_recolte||0), per = Number(b.data?.valeur_pertes||0);
+  const bilan = rec_ - dep;
+  count(vide ? 0 : bilan);
+  $("#sub").textContent = vide ? "Rien d'enregistré" : bilan > 0 ? "Tu gagnes" : bilan < 0 ? "Tu perds" : "Ni gain ni perte";
+  $("#d").textContent=F(dep); $("#r").textContent=F(rec_); $("#p").textContent=F(per);
+  $("#empty").classList.toggle("hide", !vide);
+  $("#detail").classList.toggle("hide", vide);
+  $("#list").classList.toggle("hide", vide);
+  const box = $("#items"); box.replaceChildren();
+  for (const x of rows) {
+    const r=document.createElement("div"); r.className="row";
+    const a=document.createElement("span"); a.textContent=TYPES[x.type]+" · "+LBL[x.categorie];
+    const v=document.createElement("b");
+    v.textContent = x.type==="depense" ? F(x.montant_fcfa) : Number(x.quantite_kg)+" kg × "+F(x.prix_kg_fcfa);
+    r.append(a,v); box.append(r);
+  }
+}
+
+async function enregistrer(row, btn){
+  const old = btn.textContent; btn.disabled=true; btn.textContent="Enregistrement…";
+  const {error}=await sb.from("mouvements").insert(row);
+  btn.disabled=false; btn.textContent=old;
+  if (error) return false;
+  $("#dlg").close(); toast("Enregistré"); charger(); return true;
+}
+
+/* ---- Saisie à la main ---- */
+function maj(){
+  const t=$("#t").value, c=$("#c");
+  c.replaceChildren(...CATS[t].map(([v,l])=>{const o=document.createElement("option");o.value=v;o.textContent=l;return o}));
+  $("#fc").classList.toggle("hide", CATS[t].length===1);
+  $("#fm").classList.toggle("hide", t!=="depense");
+  $("#fk").classList.toggle("hide", t==="depense");
+}
+function formulaire(m, msg){
+  $("#v-form").reset();
+  $("#t").value = m?.type || "depense"; maj();
+  if (m) { $("#c").value=m.categorie; $("#m").value=m.montant_fcfa??""; $("#k").value=m.quantite_kg??""; $("#p2").value=m.prix_kg_fcfa??""; }
+  const fe=$("#ferr"); fe.textContent=msg||""; fe.classList.toggle("hide", !msg);
+  voir("v-form");
+}
+$("#t").addEventListener("change", maj);
+$("#type").addEventListener("click", ()=>formulaire(null));
+$("#cancel").addEventListener("click", ()=>$("#dlg").close());
+$("#v-form").addEventListener("submit", async e=>{
+  e.preventDefault();
+  const t=$("#t").value, row={type:t, categorie:CATS[t].length===1?CATS[t][0][0]:$("#c").value};
+  if (t==="depense") row.montant_fcfa=Math.round(+$("#m").value);
+  else { row.quantite_kg=+$("#k").value; row.prix_kg_fcfa=Math.round(+$("#p2").value); }
+  const nums = t==="depense" ? [row.montant_fcfa] : [row.quantite_kg,row.prix_kg_fcfa];
+  const fe=$("#ferr");
+  if (!nums.every(n=>Number.isFinite(n)&&n>0&&n<=1e9)) { fe.textContent="Vérifie les chiffres."; fe.classList.remove("hide"); return; }
+  if (!(await enregistrer(row, $("#save")))) { fe.textContent="Échec de l'enregistrement. Réessaie."; fe.classList.remove("hide"); }
+});
+
+/* ---- Voix ---- */
+function arreter(){
+  clearTimeout(stopT);
+  if (rec && rec.state==="recording") rec.stop();
+  if (stream) stream.getTracks().forEach(t=>t.stop());
+}
+async function demarrer_micro(){
+  annule=false;
+  try { stream = await navigator.mediaDevices.getUserMedia({audio:true}); }
+  catch(e){ $("#errm").textContent="Micro refusé. Autorise-le dans le navigateur, ou tape à la place."; return voir("v-err"); }
+  const mime = ["audio/webm","audio/mp4"].find(m=>window.MediaRecorder && MediaRecorder.isTypeSupported(m));
+  try { rec = new MediaRecorder(stream, mime?{mimeType:mime}:undefined); }
+  catch(e){ $("#errm").textContent="Ce téléphone ne peut pas enregistrer ici. Tape à la place."; return voir("v-err"); }
+  chunks=[]; rec.ondataavailable=e=>{ if(e.data.size) chunks.push(e.data) }; rec.onstop=envoyer;
+  rec.start(); voir("v-rec");
+  stopT=setTimeout(arreter, 20000);
+}
+async function envoyer(){
+  if (annule) return;
+  voir("v-wait");
+  const blob = new Blob(chunks,{type:rec.mimeType||"audio/webm"});
+  if (blob.size < 1500) { $("#errm").textContent="Je n'ai rien entendu. Réessaie."; return voir("v-err"); }
+  const to = setTimeout(()=>ctl.abort(), 25000), ctl = new AbortController();
+  try {
+    const audio = await new Promise((ok,ko)=>{const r=new FileReader();r.onload=()=>ok(String(r.result).split(",")[1]);r.onerror=ko;r.readAsDataURL(blob)});
+    const {data} = await sb.auth.getSession();
+    const r = await fetch("/api/transcrire",{method:"POST",signal:ctl.signal,
+      headers:{"Content-Type":"application/json",Authorization:"Bearer "+data.session.access_token},
+      body:JSON.stringify({audio,mime:blob.type})});
+    clearTimeout(to);
+    if (!r.ok) throw new Error("http");
+    const j = await r.json();
+    if (!j.texte) { $("#errm").textContent="Je n'ai rien entendu. Réessaie."; return voir("v-err"); }
+    if (!j.mouvement) { $("#errm").textContent="Je n'ai pas compris : « "+j.texte+" ». Réessaie ou tape."; return voir("v-err"); }
+    const m=j.mouvement, ok = m.type==="depense" ? m.montant_fcfa : (m.quantite_kg && m.prix_kg_fcfa);
+    if (!ok) return formulaire(m, "Il manque un chiffre. Complète-le.");
+    cur=m; $("#said").textContent=j.texte; $("#what").textContent=texte(m); voir("v-ok");
+  } catch(e){
+    clearTimeout(to);
+    $("#errm").textContent="Réseau faible ou service indisponible. Réessaie, ou tape à la place."; voir("v-err");
+  }
+}
+$("#mic").addEventListener("click", demarrer_micro);
+$("#rstop").addEventListener("click", arreter);
+$("#rcancel").addEventListener("click", ()=>{ annule=true; arreter(); $("#dlg").close(); });
+$("#dlg").addEventListener("close", ()=>{ if(rec && rec.state==="recording"){ annule=true; arreter(); } });
+$("#e-type").addEventListener("click", ()=>formulaire(null));
+$("#e-again").addEventListener("click", demarrer_micro);
+$("#fix").addEventListener("click", ()=>formulaire(cur));
+$("#yes").addEventListener("click", async ()=>{
+  if (!(await enregistrer(cur, $("#yes")))) { $("#errm").textContent="Échec de l'enregistrement. Réessaie."; voir("v-err"); }
+});
+$("#retry").addEventListener("click", demarrer);
+
+async function demarrer(){
+  etat("load");
+  try {
+    const {data}=await sb.auth.getSession();
+    if (!data.session) { const {error}=await sb.auth.signInAnonymously(); if (error) throw error; }
+    await charger();
+  } catch(e) { erreur("Connexion impossible. Réessaie."); }
+}
+demarrer();
+</script>
+</body>
+</html>
