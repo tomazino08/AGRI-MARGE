@@ -1,0 +1,15 @@
+<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<button id="b" style="font-size:20px;padding:16px">Tester le micro</button>
+<pre id="o" style="white-space:pre-wrap"></pre>
+<script>
+document.getElementById("b").onclick = async () => {
+  const o = document.getElementById("o");
+  try {
+    const s = await navigator.mediaDevices.getUserMedia({audio:true});
+    o.textContent = "OK : micro ouvert (" + s.getAudioTracks().length + " piste)";
+    s.getTracks().forEach(t => t.stop());
+  } catch (e) {
+    o.textContent = "ERREUR : " + e.name + " - " + e.message;
+  }
+};
+</script>
