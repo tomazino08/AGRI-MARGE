@@ -205,7 +205,15 @@ function arreter(){
 }
 async function demarrer_micro(){
   annule=false; $("#errm").textContent="Je demande le micro…";
-  try { stream = await navigator.mediaDevices.getUserMedia({audio:true}); }
+  try { stream = await (async()=>{
+    const md=navigator.mediaDevices; let last;
+    for (const c of [{audio:true},{audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}}]) {
+      try { return await md.getUserMedia(c); } catch(e){ last=e; if(e.name==="NotAllowedError") throw e; await new Promise(r=>setTimeout(r,400)); }
+    }
+    try { const ds=(await md.enumerateDevices()).filter(d=>d.kind==="audioinput"&&d.deviceId);
+      for (const d of ds) { try { return await md.getUserMedia({audio:{deviceId:{exact:d.deviceId}}}); } catch(e){ last=e; } } } catch(e){}
+    throw last;
+  })(); }
   catch(e){ $("#errm").textContent="Micro impossible ("+(e&&e.name||"erreur")+"). Ouvre le site directement dans ton navigateur (pas depuis WhatsApp), vérifie l'autorisation du micro, ou tape à la place."; return voir("v-err"); }
   const mime = ["audio/webm","audio/mp4"].find(m=>window.MediaRecorder && MediaRecorder.isTypeSupported(m));
   try { rec = new MediaRecorder(stream, mime?{mimeType:mime}:undefined); }
