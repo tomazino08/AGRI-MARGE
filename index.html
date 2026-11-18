@@ -236,6 +236,7 @@ async function envoyer(){
       headers:{"Content-Type":"application/json",Authorization:"Bearer "+data.session.access_token},
       body:JSON.stringify({audio,mime:blob.type})});
     clearTimeout(to);
+        if (r.status===429) { $("#errm").textContent="Tu as atteint la limite du jour. Tape à la place, ou reviens demain."; return voir("v-err"); }
     if (!r.ok) throw new Error("http");
     const j = await r.json();
     if (!j.texte) { $("#errm").textContent="Je n'ai rien entendu. Réessaie."; return voir("v-err"); }
