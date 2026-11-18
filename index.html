@@ -24,6 +24,11 @@ body{background:var(--bg);color:var(--tx);font:400 16px/1.4 -apple-system,"SF Pr
 @keyframes sk{to{background-position:-200% 0}}
 .sec{margin-top:40px}
 .row{display:flex;justify-content:space-between;gap:16px;padding:16px 0;border-bottom:1px solid var(--ln)}
+button.row{width:100%;background:none;border:0;border-bottom:1px solid var(--ln);color:inherit;font:inherit;text-align:left;min-height:56px;align-items:center;transition:opacity .15s}
+button.row:active{opacity:.6}
+.card{background:var(--card);border-radius:16px;padding:8px 16px 16px;margin-top:16px}
+.card .row:first-child{border-bottom:1px solid var(--ln)}
+.card .row:nth-child(2){border-bottom:0}
 .btn{min-height:48px;border:0;border-radius:14px;background:var(--ac);color:var(--on);font:inherit;font-weight:600;padding:0 24px;transition:transform .15s,opacity .15s}
 .btn:active{transform:scale(.97)}
 .btn:disabled{opacity:.6}
@@ -59,11 +64,17 @@ select,input{font:inherit;color:inherit;width:100%;min-height:48px;border:1px so
 
 <button class="btn o" id="sell">Je vends</button>
 
+<section class="card hide" id="kilo" aria-live="polite">
+  <div class="row"><span>Ton kilo te coûte</span><b id="kc"></b></div>
+  <div class="row"><span>Tu le vends</span><b id="kv"></b></div>
+  <p id="kd" class="h" style="padding-top:8px"></p>
+  <p class="mu" style="margin-top:8px">Calculé avec les dépenses que tu as notées.</p>
+</section>
+
 <section class="sec hide" id="empty">
   <p class="h">Rien d'enregistré</p>
   <p class="mu" style="margin-top:8px">Touche le micro et dis ta première dépense, par exemple le labour.</p>
 </section>
-
 <section class="sec hide" id="detail">
   <p class="h">D'où part l'argent</p>
   <div class="row"><span>Dépenses</span><b id="d"></b></div>
@@ -71,7 +82,9 @@ select,input{font:inherit;color:inherit;width:100%;min-height:48px;border:1px so
   <div class="row"><span>Pertes (manque à gagner)</span><b id="p"></b></div>
 </section>
 
-<section class="sec hide" id="list"><p class="h">Derniers ajouts</p><div id="items"></div></section>
+<section class="sec hide" id="list"><p class="h">Derniers ajouts</p><p class="mu" style="margin-top:8px">Touche une ligne pour l'effacer.</p><div id="items"></div></section>
+
+<p class="mu" id="legal" style="margin-top:40px">Ta voix est envoyée à un service de transcription pour être écrite ; l'app ne garde que les chiffres. Ton carnet est lié à ce téléphone : si tu changes de téléphone ou effaces le navigateur, il est perdu.</p>
 
 <div class="bar">
   <button class="mic" id="mic" aria-label="Parler"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/></svg></button>
@@ -87,6 +100,8 @@ select,input{font:inherit;color:inherit;width:100%;min-height:48px;border:1px so
     <div class="acts"><button class="btn s" id="fix">Corriger</button><button class="btn" id="yes">Oui, enregistrer</button></div></div>
   <div id="v-err" class="v hide"><p id="errm"></p>
     <div class="acts"><button class="btn s" id="e-type">Taper</button><button class="btn" id="e-again">Réessayer</button></div></div>
+  <div id="v-del" class="v hide"><p class="h">Effacer cette ligne ?</p><p id="delt" style="margin-top:16px"></p>
+    <div class="acts"><button class="btn s" id="dno">Garder</button><button class="btn" id="dyes">Effacer</button></div></div>
   <form id="v-form" class="v hide">
     <p class="h">Ajout à la main</p>
     <label for="t">Quoi ?</label>
@@ -124,7 +139,7 @@ const CATS = {
 };
 const TYPES = {depense:"Dépense", recolte:"Récolte", perte:"Perte"};
 const LBL = {}; Object.values(CATS).flat().forEach(([v,l])=>LBL[v]=l);
-let shown = 0, cur = null, rec = null, stream = null, chunks = [], annule = false, stopT = null;
+let shown = 0, cur = null, rec = null, stream = null, chunks = [], annule = false, stopT = null, delId = null;
 
 function nom(m){ return m.type==="recolte" ? "Récolte" : TYPES[m.type]+" · "+LBL[m.categorie]; }
 function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("on");setTimeout(()=>e.classList.remove("on"),2500)}
@@ -134,18 +149,18 @@ function voir(id){
   if(!$("#dlg").open) $("#dlg").showModal();
 }
 function texte(m){
-  return nom(m)+" · "+(m.type==="depense" ? F(m.montant_fcfa) : m.quantite_kg+" kg × "+F(m.prix_kg_fcfa));
+  return nom(m)+" · "+(m.type==="depense" ? F(m.montant_fcfa) : Number(m.quantite_kg)+" kg × "+F(m.prix_kg_fcfa));
 }
 function count(to){
   const el=$("#big"), from=shown, t0=performance.now();
   (function step(t){const k=Math.min((t-t0)/300,1);const v=from+(to-from)*k;el.textContent=(v<0?"−":"")+F(Math.abs(v));if(k<1)requestAnimationFrame(step)})(t0);
   shown=to;
 }
-function etat(e){
+  function etat(e){
   $("#sk").classList.toggle("hide", e!=="load");
   $("#err").classList.toggle("hide", e!=="err");
   $("#big").classList.toggle("hide", e!=="ok");
-  if (e!=="ok") { $("#sub").textContent="Ton bilan"; for (const id of ["detail","list","empty"]) $("#"+id).classList.add("hide"); }
+  if (e!=="ok") { $("#sub").textContent="Ton bilan"; for (const id of ["detail","list","empty","kilo"]) $("#"+id).classList.add("hide"); }
 }
 function erreur(m){ $("#errt").textContent=m; etat("err"); }
 
@@ -153,26 +168,35 @@ async function charger(){
   etat("load");
   const [b,l] = await Promise.all([
     sb.from("bilan").select("*").maybeSingle(),
-    sb.from("mouvements").select("*").order("created_at",{ascending:false}).limit(5)
+    sb.from("mouvements").select("*").order("created_at",{ascending:false}).limit(10)
   ]);
   if (b.error || l.error) return erreur("Impossible de charger. Vérifie ton réseau.");
   etat("ok");
   const rows = l.data || [], vide = rows.length === 0;
-  const dep = Number(b.data?.depenses||0), rec_ = Number(b.data?.valeur_recolte||0), per = Number(b.data?.valeur_pertes||0);
+  const dep = Number(b.data?.depenses||0), rec_ = Number(b.data?.valeur_recolte||0), per = Number(b.data?.valeur_pertes||0), kg = Number(b.data?.kg_recolte||0);
   const bilan = rec_ - dep;
   count(vide ? 0 : bilan);
-  $("#sub").textContent = vide ? "Rien d'enregistré" : bilan > 0 ? "Tu gagnes" : bilan < 0 ? "Tu perds" : "Ni gain ni perte";
+  $("#sub").textContent = vide ? "Ton bilan" : bilan > 0 ? "Tu gagnes" : bilan < 0 ? "Tu perds" : "Ni gain ni perte";
   $("#d").textContent=F(dep); $("#r").textContent=F(rec_); $("#p").textContent=F(per);
+  const kiloOk = kg > 0 && dep > 0;
+  $("#kilo").classList.toggle("hide", !kiloOk);
+  if (kiloOk) {
+    const cout = Math.round(dep/kg), vente = Math.round(rec_/kg), diff = cout - vente;
+    $("#kc").textContent = F(cout); $("#kv").textContent = F(vente);
+    $("#kd").textContent = diff > 0 ? "Tu perds " + F(diff) + " sur chaque kilo." : diff < 0 ? "Tu gagnes " + F(-diff) + " sur chaque kilo." : "Ni gain ni perte sur chaque kilo.";
+  }
   $("#empty").classList.toggle("hide", !vide);
   $("#detail").classList.toggle("hide", vide);
   $("#list").classList.toggle("hide", vide);
   const box = $("#items"); box.replaceChildren();
   for (const x of rows) {
-    const r=document.createElement("div"); r.className="row";
+    const r=document.createElement("button"); r.type="button"; r.className="row";
     const a=document.createElement("span"); a.textContent=nom(x);
     const v=document.createElement("b");
     v.textContent = x.type==="depense" ? F(x.montant_fcfa) : Number(x.quantite_kg)+" kg × "+F(x.prix_kg_fcfa);
-    r.append(a,v); box.append(r);
+    r.append(a,v);
+    r.addEventListener("click", ()=>{ delId=x.id; $("#delt").textContent=texte(x); voir("v-del"); });
+    box.append(r);
   }
 }
 
@@ -183,6 +207,16 @@ async function enregistrer(row, btn){
   if (error) return false;
   $("#dlg").close(); toast("Enregistré"); charger(); return true;
 }
+
+/* ---- Effacer une ligne ---- */
+$("#dno").addEventListener("click", ()=>$("#dlg").close());
+$("#dyes").addEventListener("click", async ()=>{
+  const b=$("#dyes"); b.disabled=true; b.textContent="Effacement…";
+  const {error}=await sb.from("mouvements").delete().eq("id", delId);
+  b.disabled=false; b.textContent="Effacer";
+  if (error) return toast("Impossible d'effacer. Réessaie.");
+  $("#dlg").close(); toast("Effacé"); charger();
+});
 
 /* ---- Saisie à la main ---- */
 function maj(){
