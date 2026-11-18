@@ -28,6 +28,7 @@ body{background:var(--bg);color:var(--tx);font:400 16px/1.4 -apple-system,"SF Pr
 .btn:active{transform:scale(.97)}
 .btn:disabled{opacity:.6}
 .btn.s{background:transparent;color:var(--mu)}
+.btn.o{background:transparent;color:var(--ac);border:1px solid var(--ac);width:100%;margin-top:16px}
 .bar{position:fixed;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;gap:4px;padding:16px 16px calc(12px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--ln)}
 .mic{width:80px;height:80px;border-radius:50%;border:0;background:var(--ac);color:var(--on);display:grid;place-items:center;transition:transform .15s;animation:br 2.4s ease-out infinite}
 @keyframes br{0%{box-shadow:0 0 0 0 var(--ring)}70%,100%{box-shadow:0 0 0 20px transparent}}
@@ -55,6 +56,8 @@ select,input{font:inherit;color:inherit;width:100%;min-height:48px;border:1px so
   <p id="big" class="big hide">0 F</p>
   <div id="err" class="hide"><p id="errt"></p><button class="btn" id="retry" style="margin-top:16px">Réessayer</button></div>
 </section>
+
+<button class="btn o" id="sell">Je vends</button>
 
 <section class="sec hide" id="empty">
   <p class="h">Rien d'enregistré</p>
@@ -94,6 +97,18 @@ select,input{font:inherit;color:inherit;width:100%;min-height:48px;border:1px so
       <label for="p2">Prix du kilo (FCFA)</label><input id="p2" type="number" inputmode="numeric" min="1" max="1000000" step="1"></div>
     <p id="ferr" class="hide" style="margin-top:16px" role="alert"></p>
     <div class="acts"><button type="button" class="btn s" id="cancel">Annuler</button><button class="btn" id="save" type="submit">Enregistrer</button></div>
+  </form>
+  <form id="v-sell" class="v hide">
+    <p class="h">Je vends</p>
+    <p class="mu" style="margin-top:8px">Je prépare le message. Tu choisis à qui l'envoyer sur WhatsApp.</p>
+    <label for="sp">Produit</label>
+    <input id="sp" type="text" maxlength="30" placeholder="Maïs" autocomplete="off">
+    <label for="sk2">Quantité (kg)</label>
+    <input id="sk2" type="number" inputmode="decimal" min="0.1" max="1000000" step="any">
+    <label for="sx">Prix du kilo (FCFA)</label>
+    <input id="sx" type="number" inputmode="numeric" min="1" max="1000000" step="1">
+    <p id="serr" class="hide" style="margin-top:16px" role="alert"></p>
+    <div class="acts"><button type="button" class="btn s" id="scancel">Annuler</button><button class="btn" type="submit">Envoyer sur WhatsApp</button></div>
   </form>
 </dialog>
 
@@ -198,6 +213,21 @@ $("#v-form").addEventListener("submit", async e=>{
   if (!(await enregistrer(row, $("#save")))) { fe.textContent="Échec de l'enregistrement. Réessaie."; fe.classList.remove("hide"); }
 });
 
+/* ---- Je vends (message WhatsApp, rien n'est enregistré) ---- */
+$("#sell").addEventListener("click", ()=>{
+  $("#v-sell").reset(); $("#serr").classList.add("hide"); voir("v-sell");
+});
+$("#scancel").addEventListener("click", ()=>$("#dlg").close());
+$("#v-sell").addEventListener("submit", e=>{
+  e.preventDefault();
+  const prod=$("#sp").value.trim().slice(0,30), kg=+$("#sk2").value, px=Math.round(+$("#sx").value);
+  const er=$("#serr");
+  if (!prod || !(kg>0 && kg<=1e6) || !(px>0 && px<=1e6)) { er.textContent="Vérifie le produit et les chiffres."; er.classList.remove("hide"); return; }
+  const msg = "Bonjour, je vends "+kg+" kg de "+prod+" à "+F(px)+" le kilo ("+F(kg*px)+" au total). Si ça vous intéresse, répondez-moi ici.";
+  window.open("https://wa.me/?text="+encodeURIComponent(msg), "_blank", "noopener");
+  $("#dlg").close();
+});
+
 /* ---- Voix ---- */
 function arreter(){
   clearTimeout(stopT);
@@ -236,7 +266,7 @@ async function envoyer(){
       headers:{"Content-Type":"application/json",Authorization:"Bearer "+data.session.access_token},
       body:JSON.stringify({audio,mime:blob.type})});
     clearTimeout(to);
-        if (r.status===429) { $("#errm").textContent="Tu as atteint la limite du jour. Tape à la place, ou reviens demain."; return voir("v-err"); }
+    if (r.status===429) { $("#errm").textContent="Tu as atteint la limite du jour. Tape à la place, ou reviens demain."; return voir("v-err"); }
     if (!r.ok) throw new Error("http");
     const j = await r.json();
     if (!j.texte) { $("#errm").textContent="Je n'ai rien entendu. Réessaie."; return voir("v-err"); }
@@ -272,4 +302,4 @@ async function demarrer(){
 demarrer();
 </script>
 </body>
-  </html>
+</html>
