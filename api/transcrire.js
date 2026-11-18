@@ -2,6 +2,7 @@
 // La clé GROQ_API_KEY vit dans les variables d'environnement Vercel, jamais dans le code.
 const SB_URL = "https://cpfwlkawfibxbscbrckm.supabase.co";
 const SB_KEY = "sb_publishable_KJBo_HeYBlDpR6QKC1pnyQ_taqrJm3q"; // clé publique, faite pour être visible
+const LIMITE_JOUR = 20;
 
 const CAT = {
   depense: ["labour", "semis", "herbicide", "autre"],
@@ -47,7 +48,16 @@ module.exports = async (req, res) => {
     const type = typeof mime === "string" && /^audio\//.test(mime) ? mime : "audio/webm";
     const ext = /mp4/.test(type) ? "mp4" : /ogg/.test(type) ? "ogg" : "webm";
 
-    // 3. Transcription.
+    // 3. Plafond par utilisateur et par jour (compté dans Supabase).
+    const p = await fetch(SB_URL + "/rest/v1/rpc/prendre_appel", {
+      method: "POST",
+      headers: { apikey: SB_KEY, Authorization: "Bearer " + token, "Content-Type": "application/json" },
+      body: JSON.stringify({ limite: LIMITE_JOUR }),
+    });
+    if (!p.ok) return res.status(502).json({ error: "Service indisponible" });
+    if ((await p.json()) !== true) return res.status(429).json({ error: "Limite du jour atteinte" });
+
+    // 4. Transcription.
     const fd = new FormData();
     fd.append("file", new Blob([Buffer.from(audio, "base64")], { type }), "voix." + ext);
     fd.append("model", "whisper-large-v3-turbo");
@@ -62,7 +72,7 @@ module.exports = async (req, res) => {
     const texte = String((await w.json()).text || "").trim().slice(0, 300);
     if (!texte) return res.status(200).json({ texte: "", mouvement: null });
 
-    // 4. Extraction. Si elle échoue, l'utilisateur tape à la main.
+    // 5. Extraction. Si elle échoue, l'utilisateur tape à la main.
     let mouvement = null;
     try {
       const c = await fetch("https://api.groq.com/openai/v1/chat/completions", {
