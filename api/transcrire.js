@@ -5,10 +5,11 @@ const SB_KEY = "sb_publishable_KJBo_HeYBlDpR6QKC1pnyQ_taqrJm3q"; // clé publiqu
 const LIMITE_JOUR = 20;
 
 const CAT = {
-  depense: ["labour", "semis", "herbicide", "autre"],
+  depense: ["labour", "semis", "herbicide", "engrais", "main_oeuvre", "transport", "autre"],
   perte: ["inondation", "vol", "pourriture", "autre"],
   recolte: ["recolte"],
 };
+const CULTURES = ["mais", "manioc", "igname", "haricot", "arachide", "soja", "riz", "autre"];
 const num = v => { const n = Number(v); return Number.isFinite(n) && n > 0 && n <= 1e9 ? n : null; };
 
 function propre(o) {
@@ -17,6 +18,7 @@ function propre(o) {
   return {
     type: o.type,
     categorie: CAT[o.type].includes(o.categorie) ? o.categorie : (o.type === "recolte" ? "recolte" : "autre"),
+    culture: CULTURES.includes(o.culture) ? o.culture : null,
     montant_fcfa: dep ? num(o.montant_fcfa) : null,
     quantite_kg: dep ? null : num(o.quantite_kg),
     prix_kg_fcfa: dep ? null : num(o.prix_kg_fcfa),
@@ -26,9 +28,10 @@ function propre(o) {
 const CONSIGNE =
   "Tu lis une phrase d'un agriculteur béninois, en français. Extrais UN seul mouvement. " +
   "Réponds uniquement par un objet JSON : " +
-  '{"type":"depense|recolte|perte","categorie":"...","montant_fcfa":nombre ou null,"quantite_kg":nombre ou null,"prix_kg_fcfa":nombre ou null}. ' +
-  "Catégories : depense = labour, semis, herbicide, autre ; perte = inondation, vol, pourriture, autre ; recolte = recolte. " +
+  '{"type":"depense|recolte|perte","categorie":"...","culture":"...ou null","montant_fcfa":nombre ou null,"quantite_kg":nombre ou null,"prix_kg_fcfa":nombre ou null}. ' +
+  "Catégories : depense = labour, semis, herbicide, engrais, main_oeuvre, transport, autre ; perte = inondation, vol, pourriture, autre ; recolte = recolte. " +
   "depense utilise montant_fcfa ; recolte et perte utilisent quantite_kg et prix_kg_fcfa. " +
+  "culture = mais, manioc, igname, haricot, arachide, soja, riz ou autre ; mets null si l'agriculteur ne la dit pas, ne la devine pas. " +
   "N'invente JAMAIS un chiffre : si un chiffre n'est pas dit, mets null. Convertis les nombres dits en lettres en chiffres.";
 
 module.exports = async (req, res) => {
