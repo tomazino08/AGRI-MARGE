@@ -27,8 +27,9 @@ body{background:var(--bg);color:var(--tx);font:400 16px/1.4 -apple-system,"SF Pr
 button.row{width:100%;background:none;border:0;border-bottom:1px solid var(--ln);color:inherit;font:inherit;text-align:left;min-height:56px;align-items:center;transition:opacity .15s}
 button.row:active{opacity:.6}
 .card{background:var(--card);border-radius:16px;padding:8px 16px 16px;margin-top:16px}
-.card .row:first-child{border-bottom:1px solid var(--ln)}
-.card .row:nth-child(2){border-bottom:0}
+#kbox .row{border-bottom:0;padding:8px 0}
+#kbox .t{padding-top:16px}
+#kbox .t:first-child{padding-top:8px}
 .btn{min-height:48px;border:0;border-radius:14px;background:var(--ac);color:var(--on);font:inherit;font-weight:600;padding:0 24px;transition:transform .15s,opacity .15s}
 .btn:active{transform:scale(.97)}
 .btn:disabled{opacity:.6}
@@ -65,16 +66,15 @@ select,input{font:inherit;color:inherit;width:100%;min-height:48px;border:1px so
 <button class="btn o" id="sell">Je vends</button>
 
 <section class="card hide" id="kilo" aria-live="polite">
-  <div class="row"><span>Ton kilo te coûte</span><b id="kc"></b></div>
-  <div class="row"><span>Tu le vends</span><b id="kv"></b></div>
-  <p id="kd" class="h" style="padding-top:8px"></p>
-  <p class="mu" style="margin-top:8px">Calculé avec les dépenses que tu as notées.</p>
+  <div id="kbox"></div>
+  <p class="mu" id="kn" style="margin-top:8px"></p>
 </section>
 
 <section class="sec hide" id="empty">
   <p class="h">Rien d'enregistré</p>
   <p class="mu" style="margin-top:8px">Touche le micro et dis ta première dépense, par exemple le labour.</p>
 </section>
+
 <section class="sec hide" id="detail">
   <p class="h">D'où part l'argent</p>
   <div class="row"><span>Dépenses</span><b id="d"></b></div>
@@ -96,7 +96,7 @@ select,input{font:inherit;color:inherit;width:100%;min-height:48px;border:1px so
   <div id="v-rec" class="v hide"><p class="h">Je t'écoute…</p><div class="pulse"></div><p class="mu">Parle, puis touche « Terminer ».</p>
     <div class="acts"><button class="btn s" id="rcancel">Annuler</button><button class="btn" id="rstop">Terminer</button></div></div>
   <div id="v-wait" class="v hide"><p class="h">Je comprends…</p><div class="sk" style="margin-top:16px"></div><div class="sk" style="width:50%"></div></div>
-  <div id="v-ok" class="v hide"><p class="mu">Tu as dit</p><p id="said"></p><p class="h" id="what" style="margin:16px 0 8px"></p><p>C'est bon ?</p>
+  <div id="v-ok" class="v hide"><p class="mu">Tu as dit</p><p id="said"></p><p class="h" id="what" style="margin:16px 0 8px"></p><label for="cu">Quelle culture ?</label><select id="cu"></select><p style="margin-top:16px">C'est bon ?</p>
     <div class="acts"><button class="btn s" id="fix">Corriger</button><button class="btn" id="yes">Oui, enregistrer</button></div></div>
   <div id="v-err" class="v hide"><p id="errm"></p>
     <div class="acts"><button class="btn s" id="e-type">Taper</button><button class="btn" id="e-again">Réessayer</button></div></div>
@@ -107,6 +107,7 @@ select,input{font:inherit;color:inherit;width:100%;min-height:48px;border:1px so
     <label for="t">Quoi ?</label>
     <select id="t"><option value="depense">Dépense</option><option value="recolte">Récolte</option><option value="perte">Perte</option></select>
     <div id="fc"><label for="c">Catégorie</label><select id="c"></select></div>
+    <label for="cu2">Culture</label><select id="cu2"></select>
     <div id="fm"><label for="m">Montant (FCFA)</label><input id="m" type="number" inputmode="numeric" min="1" max="1000000000" step="1"></div>
     <div id="fk" class="hide"><label for="k">Quantité (kg)</label><input id="k" type="number" inputmode="decimal" min="0.1" max="1000000" step="any">
       <label for="p2">Prix du kilo (FCFA)</label><input id="p2" type="number" inputmode="numeric" min="1" max="1000000" step="1"></div>
@@ -125,23 +126,28 @@ select,input{font:inherit;color:inherit;width:100%;min-height:48px;border:1px so
     <p id="serr" class="hide" style="margin-top:16px" role="alert"></p>
     <div class="acts"><button type="button" class="btn s" id="scancel">Annuler</button><button class="btn" type="submit">Envoyer sur WhatsApp</button></div>
   </form>
-</dialog>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+    </dialog>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
 const sb = supabase.createClient("https://cpfwlkawfibxbscbrckm.supabase.co", "sb_publishable_KJBo_HeYBlDpR6QKC1pnyQ_taqrJm3q");
 const $ = s => document.querySelector(s);
 const F = n => new Intl.NumberFormat("fr-FR").format(Math.round(n)) + " F";
 const CATS = {
-  depense: [["labour","Labour"],["semis","Semis"],["herbicide","Herbicide"],["autre","Autre"]],
+  depense: [["labour","Labour"],["semis","Semis"],["herbicide","Herbicide"],["engrais","Engrais"],["main_oeuvre","Main-d'œuvre"],["transport","Transport"],["autre","Autre"]],
   recolte: [["recolte","Récolte"]],
   perte: [["inondation","Inondation"],["vol","Vol"],["pourriture","Pourriture"],["autre","Autre"]]
 };
 const TYPES = {depense:"Dépense", recolte:"Récolte", perte:"Perte"};
+const CULT = [["","Non précisée"],["mais","Maïs"],["manioc","Manioc"],["igname","Igname"],["haricot","Haricot"],["arachide","Arachide"],["soja","Soja"],["riz","Riz"],["autre","Autre"]];
+const CL = Object.fromEntries(CULT);
+function remplir(sel){ sel.replaceChildren(...CULT.map(([v,l])=>{const o=document.createElement("option");o.value=v;o.textContent=l;return o})); }
+function derniere(){ try { return localStorage.getItem("cult") || ""; } catch(e) { return ""; } }
+function retenir(c){ try { if (c) localStorage.setItem("cult", c); } catch(e) {} }
 const LBL = {}; Object.values(CATS).flat().forEach(([v,l])=>LBL[v]=l);
+remplir($("#cu")); remplir($("#cu2"));
 let shown = 0, cur = null, rec = null, stream = null, chunks = [], annule = false, stopT = null, delId = null;
 
-function nom(m){ return m.type==="recolte" ? "Récolte" : TYPES[m.type]+" · "+LBL[m.categorie]; }
+function nom(m){ return (m.type==="recolte" ? "Récolte" : TYPES[m.type]+" · "+LBL[m.categorie])+(m.culture&&CL[m.culture]?" · "+CL[m.culture]:""); }
 function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("on");setTimeout(()=>e.classList.remove("on"),2500)}
 function voir(id){
   document.querySelectorAll(".v").forEach(v=>v.classList.add("hide"));
@@ -156,7 +162,7 @@ function count(to){
   (function step(t){const k=Math.min((t-t0)/300,1);const v=from+(to-from)*k;el.textContent=(v<0?"−":"")+F(Math.abs(v));if(k<1)requestAnimationFrame(step)})(t0);
   shown=to;
 }
-  function etat(e){
+function etat(e){
   $("#sk").classList.toggle("hide", e!=="load");
   $("#err").classList.toggle("hide", e!=="err");
   $("#big").classList.toggle("hide", e!=="ok");
@@ -166,25 +172,44 @@ function erreur(m){ $("#errt").textContent=m; etat("err"); }
 
 async function charger(){
   etat("load");
-  const [b,l] = await Promise.all([
+  const [b,l,al] = await Promise.all([
     sb.from("bilan").select("*").maybeSingle(),
-    sb.from("mouvements").select("*").order("created_at",{ascending:false}).limit(10)
+    sb.from("mouvements").select("*").order("created_at",{ascending:false}).limit(10),
+    sb.from("mouvements").select("type,culture,montant_fcfa,quantite_kg,prix_kg_fcfa")
   ]);
-  if (b.error || l.error) return erreur("Impossible de charger. Vérifie ton réseau.");
+  if (b.error || l.error || al.error) return erreur("Impossible de charger. Vérifie ton réseau.");
   etat("ok");
   const rows = l.data || [], vide = rows.length === 0;
-  const dep = Number(b.data?.depenses||0), rec_ = Number(b.data?.valeur_recolte||0), per = Number(b.data?.valeur_pertes||0), kg = Number(b.data?.kg_recolte||0);
+  const dep = Number(b.data?.depenses||0), rec_ = Number(b.data?.valeur_recolte||0), per = Number(b.data?.valeur_pertes||0);
   const bilan = rec_ - dep;
   count(vide ? 0 : bilan);
   $("#sub").textContent = vide ? "Ton bilan" : bilan > 0 ? "Tu gagnes" : bilan < 0 ? "Tu perds" : "Ni gain ni perte";
   $("#d").textContent=F(dep); $("#r").textContent=F(rec_); $("#p").textContent=F(per);
-  const kiloOk = kg > 0 && dep > 0;
-  $("#kilo").classList.toggle("hide", !kiloOk);
-  if (kiloOk) {
-    const cout = Math.round(dep/kg), vente = Math.round(rec_/kg), diff = cout - vente;
-    $("#kc").textContent = F(cout); $("#kv").textContent = F(vente);
-    $("#kd").textContent = diff > 0 ? "Tu perds " + F(diff) + " sur chaque kilo." : diff < 0 ? "Tu gagnes " + F(-diff) + " sur chaque kilo." : "Ni gain ni perte sur chaque kilo.";
+
+  /* Coût au kilo : une seule culture dans le carnet = tout va dessus ; sinon culture par culture. */
+  const A = al.data || [];
+  const noms = new Set(A.filter(x=>x.culture && (x.type==="depense"||x.type==="recolte")).map(x=>x.culture));
+  const G = {};
+  for (const x of A) {
+    if (x.type!=="depense" && x.type!=="recolte") continue;
+    const key = noms.size<=1 ? ([...noms][0]||"") : (x.culture||"");
+    const o = G[key] || (G[key]={d:0,k:0,v:0});
+    if (x.type==="depense") o.d += Number(x.montant_fcfa);
+    else { const q=Number(x.quantite_kg); o.k += q; o.v += q*Number(x.prix_kg_fcfa); }
   }
+  $("#kn").textContent = noms.size>1 ? "Calculé culture par culture. Les dépenses sans culture précisée ne sont pas réparties." : "Calculé avec les dépenses que tu as notées.";
+  const kb=$("#kbox"); kb.replaceChildren(); let nk=0;
+  const kr=(a,v2)=>{const r=document.createElement("div");r.className="row";const s=document.createElement("span");s.textContent=a;const v=document.createElement("b");v.textContent=v2;r.append(s,v);return r};
+  for (const [c,o] of Object.entries(G)) {
+    if (!(o.k>0 && o.d>0)) continue; nk++;
+    const cout=Math.round(o.d/o.k), vente=Math.round(o.v/o.k), diff=cout-vente;
+    if (c) { const t=document.createElement("p"); t.className="h t"; t.textContent=CL[c]; kb.append(t); }
+    const d=document.createElement("p"); d.className="h"; d.style.padding="8px 0";
+    d.textContent = diff>0 ? "Tu perds "+F(diff)+" sur chaque kilo." : diff<0 ? "Tu gagnes "+F(-diff)+" sur chaque kilo." : "Ni gain ni perte sur chaque kilo.";
+    kb.append(kr("Ton kilo te coûte",F(cout)), kr("Tu le vends",F(vente)), d);
+  }
+  $("#kilo").classList.toggle("hide", !nk);
+
   $("#empty").classList.toggle("hide", !vide);
   $("#detail").classList.toggle("hide", vide);
   $("#list").classList.toggle("hide", vide);
@@ -199,12 +224,12 @@ async function charger(){
     box.append(r);
   }
 }
-
 async function enregistrer(row, btn){
   const old = btn.textContent; btn.disabled=true; btn.textContent="Enregistrement…";
   const {error}=await sb.from("mouvements").insert(row);
   btn.disabled=false; btn.textContent=old;
   if (error) return false;
+  retenir(row.culture);
   $("#dlg").close(); toast("Enregistré"); charger(); return true;
 }
 
@@ -228,7 +253,7 @@ function maj(){
 }
 function formulaire(m, msg){
   $("#v-form").reset();
-  $("#t").value = m?.type || "depense"; maj();
+  $("#t").value = m?.type || "depense"; maj(); $("#cu2").value = m ? (m.culture||"") : derniere();
   if (m) { $("#c").value=m.categorie; $("#m").value=m.montant_fcfa??""; $("#k").value=m.quantite_kg??""; $("#p2").value=m.prix_kg_fcfa??""; }
   const fe=$("#ferr"); fe.textContent=msg||""; fe.classList.toggle("hide", !msg);
   voir("v-form");
@@ -238,7 +263,7 @@ $("#type").addEventListener("click", ()=>formulaire(null));
 $("#cancel").addEventListener("click", ()=>$("#dlg").close());
 $("#v-form").addEventListener("submit", async e=>{
   e.preventDefault();
-  const t=$("#t").value, row={type:t, categorie:CATS[t].length===1?CATS[t][0][0]:$("#c").value};
+  const t=$("#t").value, row={type:t, categorie:CATS[t].length===1?CATS[t][0][0]:$("#c").value, culture:$("#cu2").value||null};
   if (t==="depense") row.montant_fcfa=Math.round(+$("#m").value);
   else { row.quantite_kg=+$("#k").value; row.prix_kg_fcfa=Math.round(+$("#p2").value); }
   const nums = t==="depense" ? [row.montant_fcfa] : [row.quantite_kg,row.prix_kg_fcfa];
@@ -307,7 +332,7 @@ async function envoyer(){
     if (!j.mouvement) { $("#errm").textContent="Je n'ai pas compris : « "+j.texte+" ». Réessaie ou tape."; return voir("v-err"); }
     const m=j.mouvement, ok = m.type==="depense" ? m.montant_fcfa : (m.quantite_kg && m.prix_kg_fcfa);
     if (!ok) return formulaire(m, "Il manque un chiffre. Complète-le.");
-    cur=m; $("#said").textContent=j.texte; $("#what").textContent=texte(m); voir("v-ok");
+    cur=m; $("#cu").value=m.culture||derniere(); $("#said").textContent=j.texte; $("#what").textContent=texte(m); voir("v-ok");
   } catch(e){
     clearTimeout(to);
     $("#errm").textContent="Réseau faible ou service indisponible. Réessaie, ou tape à la place."; voir("v-err");
@@ -319,8 +344,9 @@ $("#rcancel").addEventListener("click", ()=>{ annule=true; arreter(); $("#dlg").
 $("#dlg").addEventListener("close", ()=>{ if(rec && rec.state==="recording"){ annule=true; arreter(); } });
 $("#e-type").addEventListener("click", ()=>formulaire(null));
 $("#e-again").addEventListener("click", demarrer_micro);
-$("#fix").addEventListener("click", ()=>formulaire(cur));
+$("#fix").addEventListener("click", ()=>{ cur.culture=$("#cu").value||null; formulaire(cur); });
 $("#yes").addEventListener("click", async ()=>{
+  cur.culture=$("#cu").value||null;
   if (!(await enregistrer(cur, $("#yes")))) { $("#errm").textContent="Échec de l'enregistrement. Réessaie."; voir("v-err"); }
 });
 $("#retry").addEventListener("click", demarrer);
