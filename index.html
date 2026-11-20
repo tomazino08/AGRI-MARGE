@@ -12,21 +12,32 @@
 body{background:var(--bg);color:var(--tx);font:400 16px/1.4 -apple-system,"SF Pro Text",Roboto,system-ui,sans-serif;max-width:480px;margin:auto;padding:calc(16px + env(safe-area-inset-top)) 16px calc(192px + env(safe-area-inset-bottom));font-variant-numeric:tabular-nums}
 .hide{display:none!important}
 .mu{color:var(--mu)}
+a{color:var(--ac)}
 .h{font-size:20px;font-weight:600}
 .top{display:flex;align-items:center;gap:8px;margin-bottom:24px}
 .logo{display:grid;grid-template-columns:repeat(3,8px);gap:2px}
 .logo i{width:8px;height:8px;border-radius:2px;background:var(--ac)}
 .logo i:nth-child(5){opacity:.35}
-.hero{background:var(--hero);color:var(--hon);border-radius:16px;padding:32px 24px;min-height:200px;display:flex;flex-direction:column;justify-content:center}
+.hero{position:relative;overflow:hidden;background:var(--hero);color:var(--hon);border-radius:16px;padding:32px 24px;min-height:208px;display:flex;flex-direction:column;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,.12);animation:up .3s ease both}
+.hero::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(115deg,rgba(255,255,255,.055) 0 2px,transparent 2px 16px);pointer-events:none}
+.hero>*{position:relative}
 .hero #sub{opacity:.85}
 .big{font-size:clamp(40px,13vw,64px);font-weight:600;line-height:1.1;margin-top:8px;white-space:nowrap}
+.big small{font-size:.5em;font-weight:400;opacity:.8}
 .sk{height:56px;width:70%;margin:8px 0;border-radius:12px;background:linear-gradient(90deg,rgba(128,128,128,.2),rgba(128,128,128,.4),rgba(128,128,128,.2));background-size:200% 100%;animation:sk 1.2s linear infinite}
 @keyframes sk{to{background-position:-200% 0}}
+@keyframes up{from{opacity:0;transform:translateY(8px)}}
+.sec,.card{animation:up .3s ease both}
 .sec{margin-top:40px}
 .row{display:flex;justify-content:space-between;gap:16px;padding:16px 0;border-bottom:1px solid var(--ln)}
 button.row{width:100%;background:none;border:0;border-bottom:1px solid var(--ln);color:inherit;font:inherit;text-align:left;min-height:56px;align-items:center;transition:opacity .15s}
 button.row:active{opacity:.6}
-.card{background:var(--card);border-radius:16px;padding:8px 16px 16px;margin-top:16px}
+.row2{padding:16px 0;border-bottom:1px solid var(--ln)}
+.rl{display:flex;justify-content:space-between;gap:16px}
+.gauge{display:block;height:8px;border-radius:4px;background:var(--ln);margin-top:8px;overflow:hidden}
+.gauge u{display:block;height:100%;width:0;border-radius:4px;background:var(--mu);transition:width .3s ease}
+#gr{background:var(--ac)}
+.card{background:var(--card);border-radius:16px;padding:8px 16px 16px;margin-top:16px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
 #kbox .row{border-bottom:0;padding:8px 0}
 #kbox .t{padding-top:16px}
 #kbox .t:first-child{padding-top:8px}
@@ -41,11 +52,15 @@ button.row:active{opacity:.6}
 .mic:active{transform:scale(.94)}
 .mic svg{width:32px;height:32px}
 .link{background:none;border:0;color:var(--mu);font:inherit;min-height:44px;padding:0 16px;text-decoration:underline}
+.arrow{display:block;width:32px;height:32px;margin:24px auto 0;color:var(--ac);animation:bo 1.4s ease-in-out infinite}
+@keyframes bo{50%{transform:translateY(8px)}}
 dialog{border:0;border-radius:16px;background:var(--card);color:var(--tx);width:calc(100% - 32px);max-width:448px;padding:24px 16px;margin:auto auto 16px}
 dialog::backdrop{background:rgba(0,0,0,.45)}
 .acts{display:flex;gap:8px;margin-top:24px}.acts .btn{flex:1;padding:0 8px}
-.pulse{width:64px;height:64px;border-radius:50%;background:var(--ac);margin:24px auto;animation:p 1.2s ease-in-out infinite}
-@keyframes p{50%{transform:scale(1.25);opacity:.55}}
+.wave{display:flex;justify-content:center;align-items:center;gap:8px;height:56px;margin:24px 0}
+.wave i{width:8px;height:56px;border-radius:4px;background:var(--ac);transform:scaleY(.3);animation:w 1s ease-in-out infinite}
+.wave i:nth-child(2){animation-delay:.15s}.wave i:nth-child(3){animation-delay:.3s}.wave i:nth-child(4){animation-delay:.45s}.wave i:nth-child(5){animation-delay:.6s}
+@keyframes w{50%{transform:scaleY(1)}}
 label{display:block;margin:16px 0 8px}
 select,input{font:inherit;color:inherit;width:100%;min-height:48px;border:1px solid var(--ln);border-radius:12px;background:var(--bg);padding:0 16px}
 #toast{position:fixed;left:16px;right:16px;top:calc(16px + env(safe-area-inset-top));max-width:448px;margin:auto;background:var(--tx);color:var(--bg);border-radius:14px;padding:12px 16px;opacity:0;transform:translateY(-8px);transition:.25s;pointer-events:none}
@@ -59,7 +74,7 @@ select,input{font:inherit;color:inherit;width:100%;min-height:48px;border:1px so
 <section class="hero" aria-live="polite">
   <p id="sub" class="h">Ton bilan</p>
   <div id="sk" class="sk"></div>
-  <p id="big" class="big hide">0 F</p>
+  <p id="big" class="big hide"><span id="bn">0</span><small> F</small></p>
   <div id="err" class="hide"><p id="errt"></p><button class="btn" id="retry" style="margin-top:16px">Réessayer</button></div>
 </section>
 
@@ -73,18 +88,27 @@ select,input{font:inherit;color:inherit;width:100%;min-height:48px;border:1px so
 <section class="sec hide" id="empty">
   <p class="h">Rien d'enregistré</p>
   <p class="mu" style="margin-top:8px">Touche le micro et dis ta première dépense, par exemple le labour.</p>
+  <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
 </section>
 
 <section class="sec hide" id="detail">
   <p class="h">D'où part l'argent</p>
-  <div class="row"><span>Dépenses</span><b id="d"></b></div>
-  <div class="row"><span>Récolte (valeur)</span><b id="r"></b></div>
-  <div class="row"><span>Pertes (manque à gagner)</span><b id="p"></b></div>
+  <div class="row2"><div class="rl"><span>Dépenses</span><b id="d"></b></div><i class="gauge"><u id="gd"></u></i></div>
+  <div class="row2"><div class="rl"><span>Récolte (valeur)</span><b id="r"></b></div><i class="gauge"><u id="gr"></u></i></div>
+  <div class="row2"><div class="rl"><span>Pertes (manque à gagner)</span><b id="p"></b></div><i class="gauge"><u id="gp"></u></i></div>
 </section>
 
 <section class="sec hide" id="list"><p class="h">Derniers ajouts</p><p class="mu" style="margin-top:8px">Touche une ligne pour l'effacer.</p><div id="items"></div></section>
 
-<p class="mu" id="legal" style="margin-top:40px">Ta voix est envoyée à un service de transcription pour être écrite ; l'app ne garde que les chiffres. Ton carnet est lié à ce téléphone : si tu changes de téléphone ou effaces le navigateur, il est perdu.</p>
+<section class="sec" id="meteo">
+  <p class="h">Pluie à venir</p>
+  <p class="mu" id="mt" style="margin-top:8px">Vois les prévisions de pluie autour de toi.</p>
+  <div id="mb"></div>
+  <button class="btn o" id="mgo">Voir la pluie prévue</button>
+  <p class="mu hide" id="msrc" style="margin-top:16px">Source : <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo.com</a>. Ce sont des prévisions, pas des certitudes.</p>
+</section>
+
+<p class="mu" id="legal" style="margin-top:40px">Ta voix est envoyée à un service de transcription pour être écrite ; l'app ne garde que les chiffres. Pour la météo, ta position approximative est envoyée à Open-Meteo ; l'app ne la garde pas. Ton carnet est lié à ce téléphone : si tu changes de téléphone ou effaces le navigateur, il est perdu.</p>
 
 <div class="bar">
   <button class="mic" id="mic" aria-label="Parler"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/></svg></button>
@@ -93,7 +117,7 @@ select,input{font:inherit;color:inherit;width:100%;min-height:48px;border:1px so
 <div id="toast" role="status"></div>
 
 <dialog id="dlg">
-  <div id="v-rec" class="v hide"><p class="h">Je t'écoute…</p><div class="pulse"></div><p class="mu">Parle, puis touche « Terminer ».</p>
+  <div id="v-rec" class="v hide"><p class="h">Je t'écoute…</p><div class="wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div><p class="mu">Parle, puis touche « Terminer ».</p>
     <div class="acts"><button class="btn s" id="rcancel">Annuler</button><button class="btn" id="rstop">Terminer</button></div></div>
   <div id="v-wait" class="v hide"><p class="h">Je comprends…</p><div class="sk" style="margin-top:16px"></div><div class="sk" style="width:50%"></div></div>
   <div id="v-ok" class="v hide"><p class="mu">Tu as dit</p><p id="said"></p><p class="h" id="what" style="margin:16px 0 8px"></p><label for="cu">Quelle culture ?</label><select id="cu"></select><p style="margin-top:16px">C'est bon ?</p>
@@ -126,12 +150,13 @@ select,input{font:inherit;color:inherit;width:100%;min-height:48px;border:1px so
     <p id="serr" class="hide" style="margin-top:16px" role="alert"></p>
     <div class="acts"><button type="button" class="btn s" id="scancel">Annuler</button><button class="btn" type="submit">Envoyer sur WhatsApp</button></div>
   </form>
-    </dialog>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  </dialog>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
 const sb = supabase.createClient("https://cpfwlkawfibxbscbrckm.supabase.co", "sb_publishable_KJBo_HeYBlDpR6QKC1pnyQ_taqrJm3q");
 const $ = s => document.querySelector(s);
-const F = n => new Intl.NumberFormat("fr-FR").format(Math.round(n)) + " F";
+const N = n => new Intl.NumberFormat("fr-FR").format(Math.round(n));
+const F = n => N(n) + " F";
 const CATS = {
   depense: [["labour","Labour"],["semis","Semis"],["herbicide","Herbicide"],["engrais","Engrais"],["main_oeuvre","Main-d'œuvre"],["transport","Transport"],["autre","Autre"]],
   recolte: [["recolte","Récolte"]],
@@ -158,8 +183,8 @@ function texte(m){
   return nom(m)+" · "+(m.type==="depense" ? F(m.montant_fcfa) : Number(m.quantite_kg)+" kg × "+F(m.prix_kg_fcfa));
 }
 function count(to){
-  const el=$("#big"), from=shown, t0=performance.now();
-  (function step(t){const k=Math.min((t-t0)/300,1);const v=from+(to-from)*k;el.textContent=(v<0?"−":"")+F(Math.abs(v));if(k<1)requestAnimationFrame(step)})(t0);
+  const el=$("#bn"), from=shown, t0=performance.now();
+  (function step(t){const k=Math.min((t-t0)/300,1);const v=from+(to-from)*k;el.textContent=(v<0?"−":"")+N(Math.abs(v));if(k<1)requestAnimationFrame(step)})(t0);
   shown=to;
 }
 function etat(e){
@@ -185,6 +210,8 @@ async function charger(){
   count(vide ? 0 : bilan);
   $("#sub").textContent = vide ? "Ton bilan" : bilan > 0 ? "Tu gagnes" : bilan < 0 ? "Tu perds" : "Ni gain ni perte";
   $("#d").textContent=F(dep); $("#r").textContent=F(rec_); $("#p").textContent=F(per);
+  const mx = Math.max(dep, rec_, per, 1);
+  for (const [id,v] of [["gd",dep],["gr",rec_],["gp",per]]) $("#"+id).style.width = (v>0 ? Math.max(v/mx*100, 2) : 0) + "%";
 
   /* Coût au kilo : une seule culture dans le carnet = tout va dessus ; sinon culture par culture. */
   const A = al.data || [];
@@ -224,6 +251,7 @@ async function charger(){
     box.append(r);
   }
 }
+
 async function enregistrer(row, btn){
   const old = btn.textContent; btn.disabled=true; btn.textContent="Enregistrement…";
   const {error}=await sb.from("mouvements").insert(row);
@@ -287,6 +315,40 @@ $("#v-sell").addEventListener("submit", e=>{
   $("#dlg").close();
 });
 
+/* ---- Pluie à venir (Open-Meteo, données seulement, aucun conseil) ---- */
+$("#mgo").addEventListener("click", ()=>{
+  const b=$("#mgo"), mt=$("#mt"), mb=$("#mb");
+  if (!navigator.geolocation) { mt.textContent="Ce téléphone ne donne pas sa position."; return; }
+  b.disabled=true; b.textContent="Je cherche ta position…"; mb.replaceChildren();
+  const fin = t => { b.disabled=false; b.textContent=t; };
+  navigator.geolocation.getCurrentPosition(async p=>{
+    const ctl=new AbortController(), to=setTimeout(()=>ctl.abort(), 10000);
+    try {
+      const la=p.coords.latitude.toFixed(2), lo=p.coords.longitude.toFixed(2);
+      const r=await fetch("https://api.open-meteo.com/v1/forecast?latitude="+la+"&longitude="+lo+"&daily=precipitation_probability_max,precipitation_sum&forecast_days=3&timezone=auto",{signal:ctl.signal});
+      clearTimeout(to);
+      if (!r.ok) throw new Error("http");
+      const d=(await r.json()).daily;
+      if (!d || !Array.isArray(d.time)) throw new Error("data");
+      ["Aujourd'hui","Demain","Après-demain"].forEach((nm,i)=>{
+        if (d.time[i]===undefined) return;
+        const pr=d.precipitation_probability_max?.[i], mm=d.precipitation_sum?.[i];
+        const row=document.createElement("div"); row.className="row";
+        const s=document.createElement("span"); s.textContent=nm;
+        const v=document.createElement("b");
+        v.textContent=(pr==null?"—":pr+" % de pluie")+" · "+(mm==null?"—":new Intl.NumberFormat("fr-FR",{maximumFractionDigits:1}).format(mm)+" mm");
+        row.append(s,v); mb.append(row);
+      });
+      mt.textContent="Prévisions pour ta zone, sur 3 jours.";
+      $("#msrc").classList.remove("hide");
+      fin("Actualiser");
+    } catch(e) { clearTimeout(to); mt.textContent="Impossible d'avoir la météo. Vérifie ton réseau et réessaie."; fin("Réessayer"); }
+  }, err=>{
+    mt.textContent = err.code===1 ? "Position refusée. Autorise la position pour ce site, puis réessaie." : "Position introuvable. Réessaie.";
+    fin("Voir la pluie prévue");
+  }, {timeout:10000, maximumAge:600000});
+});
+
 /* ---- Voix ---- */
 function arreter(){
   clearTimeout(stopT);
@@ -325,7 +387,7 @@ async function envoyer(){
       headers:{"Content-Type":"application/json",Authorization:"Bearer "+data.session.access_token},
       body:JSON.stringify({audio,mime:blob.type})});
     clearTimeout(to);
-    if (r.status===429) { $("#errm").textContent="Tu as atteint la limite du jour. Tape à la place, ou reviens demain."; return voir("v-err"); }
+    if (r.status===429) { $("#errm").textContent="La limite du jour est atteinte. Tape à la place, ou reviens demain."; return voir("v-err"); }
     if (!r.ok) throw new Error("http");
     const j = await r.json();
     if (!j.texte) { $("#errm").textContent="Je n'ai rien entendu. Réessaie."; return voir("v-err"); }
@@ -362,4 +424,4 @@ async function demarrer(){
 demarrer();
 </script>
 </body>
-</html>
+  </html>
