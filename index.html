@@ -485,6 +485,51 @@ async function demarrer(){
     await charger();
   } catch(e) { erreur("Connexion impossible. Réessaie."); }
 }
+/* ---- Pluie : version claire (remplace le bloc précédent) ---- */
+(function(){
+  const vieux=$("#mgo"), b=vieux.cloneNode(true); vieux.replaceWith(b);
+  const mt=$("#mt"), mb=$("#mb");
+  const AIDE="Chances de pluie, sur 100 : plus le nombre est haut, plus il y a de chances qu'il pleuve. Matin = 6 h à 12 h, après-midi = 12 h à 18 h, soir = 18 h à minuit. 1 mm d'eau = 1 litre sur chaque mètre carré.";
+  const nf=new Intl.NumberFormat("fr-FR",{maximumFractionDigits:1});
+  const maxi=(a,i,j)=>{const v=a.slice(i,j).filter(x=>x!=null);return v.length?Math.max(...v):null};
+  const ligne=(txt,mu,haut)=>{const p=document.createElement("p");p.textContent=txt;p.style.marginTop="8px";if(mu)p.className="mu";if(haut)p.style.fontWeight="600";return p};
+  b.addEventListener("click",()=>{
+    if(!navigator.geolocation){mt.textContent="Ce téléphone ne donne pas sa position.";return}
+    b.disabled=true;b.textContent="Je cherche ta position…";mb.replaceChildren();
+    const fin=t=>{b.disabled=false;b.textContent=t};
+    navigator.geolocation.getCurrentPosition(async p=>{
+      const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),10000);
+      try{
+        const la=p.coords.latitude.toFixed(2),lo=p.coords.longitude.toFixed(2);
+        const r=await fetch("https://api.open-meteo.com/v1/forecast?latitude="+la+"&longitude="+lo+"&daily=precipitation_probability_max,precipitation_sum&hourly=precipitation_probability&forecast_days=3&timezone=auto",{signal:ctl.signal});
+        clearTimeout(to);
+        if(!r.ok)throw new Error("http");
+        const j=await r.json(),d=j.daily,h=(j.hourly&&j.hourly.precipitation_probability)||[];
+        if(!d||!Array.isArray(d.time))throw new Error("data");
+        ["Aujourd'hui","Demain","Après-demain"].forEach((nm,i)=>{
+          if(d.time[i]===undefined)return;
+          const pr=d.precipitation_probability_max?.[i],mm=d.precipitation_sum?.[i];
+          const bloc=document.createElement("div");bloc.className="row2";
+          const t=document.createElement("p");t.className="h";t.textContent=nm;
+          bloc.append(t,
+            ligne(pr==null?"Chances de pluie : —":pr+(pr<=1?" chance":" chances")+" sur 100 qu'il pleuve",false,true),
+            ligne("Eau attendue : "+(mm==null?"—":nf.format(mm)+" mm"),false,false));
+          if(h.length>=i*24+24){
+            const m=maxi(h,i*24+6,i*24+12),a=maxi(h,i*24+12,i*24+18),s=maxi(h,i*24+18,i*24+24);
+            bloc.append(ligne("Matin "+(m??"—")+" · Après-midi "+(a??"—")+" · Soir "+(s??"—"),true,false));
+          }
+          mb.append(bloc);
+        });
+        mt.textContent=AIDE;
+        $("#msrc").classList.remove("hide");
+        fin("Actualiser");
+      }catch(e){clearTimeout(to);mt.textContent="Impossible d'avoir la météo. Vérifie ton réseau et réessaie.";fin("Réessayer")}
+    },err=>{
+      mt.textContent=err.code===1?"Position refusée. Autorise la position pour ce site, puis réessaie.":"Position introuvable. Réessaie.";
+      fin("Voir la pluie prévue");
+    },{timeout:10000,maximumAge:600000});
+  });
+})();
 demarrer();
 </script>
 </body>
