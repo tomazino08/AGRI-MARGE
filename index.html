@@ -6,10 +6,10 @@
 <meta name="theme-color" content="#14532d">
 <title>AGRI-MARGE</title>
 <style>
-:root{--bg:#f5f4ef;--tx:#1b1d1a;--mu:#5a5d56;--ac:#1f7a4d;--on:#fff;--ln:#e2e1da;--hero:#14532d;--hon:#fff;--card:#fff;--ring:rgba(31,122,77,.35)}
-@media(prefers-color-scheme:dark){:root{--bg:#101211;--tx:#f1f1ec;--mu:#a2a59d;--ac:#5fd08f;--on:#0d1f15;--ln:#2a2d2a;--hero:#173b28;--hon:#eaf7ef;--card:#1a1d1b;--ring:rgba(95,208,143,.35)}}
-*{box-sizing:border-box;margin:0}
-body{background:var(--bg);color:var(--tx);font:400 16px/1.4 -apple-system,"SF Pro Text",Roboto,system-ui,sans-serif;max-width:480px;margin:auto;padding:calc(16px + env(safe-area-inset-top)) 16px calc(192px + env(safe-area-inset-bottom));font-variant-numeric:tabular-nums}
+:root{--bg:#f5f4ef;--tx:#1b1d1a;--mu:#5a5d56;--ac:#1f7a4d;--on:#fff;--ln:#e2e1da;--hero:#14532d;--hon:#fff;--card:#fff;--ring:rgba(31,122,77,.35);--bar:rgba(245,244,239,.92)}
+@media(prefers-color-scheme:dark){:root{--bg:#101211;--tx:#f1f1ec;--mu:#a2a59d;--ac:#5fd08f;--on:#0d1f15;--ln:#2a2d2a;--hero:#173b28;--hon:#eaf7ef;--card:#1a1d1b;--ring:rgba(95,208,143,.35);--bar:rgba(16,18,17,.92)}}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--tx);font:400 16px/1.4 -apple-system,"SF Pro Text",Roboto,system-ui,sans-serif;max-width:480px;margin:auto;padding:calc(16px + env(safe-area-inset-top)) 16px calc(128px + env(safe-area-inset-bottom));font-variant-numeric:tabular-nums}
 .hide{display:none!important}
 .mu{color:var(--mu)}
 a{color:var(--ac)}
@@ -18,15 +18,17 @@ a{color:var(--ac)}
 .logo{display:grid;grid-template-columns:repeat(3,8px);gap:2px}
 .logo i{width:8px;height:8px;border-radius:2px;background:var(--ac)}
 .logo i:nth-child(5){opacity:.35}
-.hero{position:relative;overflow:hidden;background:var(--hero);color:var(--hon);border-radius:16px;padding:32px 24px;min-height:208px;display:flex;flex-direction:column;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,.12);animation:up .3s ease both}
-.hero::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(115deg,rgba(255,255,255,.055) 0 2px,transparent 2px 16px);pointer-events:none}
-.hero>*{position:relative}
+main.view{animation:up .25s ease both}
+.hero{position:relative;overflow:hidden;color:var(--hon);border-radius:24px;padding:32px 24px;min-height:240px;display:flex;flex-direction:column;justify-content:flex-start;background:radial-gradient(120% 80% at 85% 0%,rgba(255,255,255,.12),transparent 60%),var(--hero);box-shadow:0 8px 24px rgba(0,0,0,.14)}
+.hero>:not(.field){position:relative}
+.hero .field{position:absolute;left:-30%;right:-30%;bottom:-8px;height:58%;background:repeating-linear-gradient(90deg,rgba(255,255,255,.15) 0 4px,transparent 4px 32px);transform:perspective(200px) rotateX(52deg);transform-origin:50% 100%;-webkit-mask-image:linear-gradient(to top,#000 10%,transparent);mask-image:linear-gradient(to top,#000 10%,transparent);pointer-events:none}
 .hero #sub{opacity:.85}
 .big{font-size:clamp(40px,13vw,64px);font-weight:600;line-height:1.1;margin-top:8px;white-space:nowrap}
-.big small{font-size:.5em;font-weight:400;opacity:.8}
+.big small{font-size:inherit;font-weight:400;opacity:.7}
 .sk{height:56px;width:70%;margin:8px 0;border-radius:12px;background:linear-gradient(90deg,rgba(128,128,128,.2),rgba(128,128,128,.4),rgba(128,128,128,.2));background-size:200% 100%;animation:sk 1.2s linear infinite}
 @keyframes sk{to{background-position:-200% 0}}
 @keyframes up{from{opacity:0;transform:translateY(8px)}}
+@keyframes sheet{from{opacity:0;transform:translateY(24px)}}
 .sec,.card{animation:up .3s ease both}
 .sec{margin-top:40px}
 .row{display:flex;justify-content:space-between;gap:16px;padding:16px 0;border-bottom:1px solid var(--ln)}
@@ -46,15 +48,22 @@ button.row:active{opacity:.6}
 .btn:disabled{opacity:.6}
 .btn.s{background:transparent;color:var(--mu)}
 .btn.o{background:transparent;color:var(--ac);border:1px solid var(--ac);width:100%;margin-top:16px}
-.bar{position:fixed;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;gap:4px;padding:16px 16px calc(12px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--ln)}
-.mic{width:80px;height:80px;border-radius:50%;border:0;background:var(--ac);color:var(--on);display:grid;place-items:center;transition:transform .15s;animation:br 2.4s ease-out infinite}
+.tabs{position:fixed;left:0;right:0;bottom:0;display:grid;grid-template-columns:1fr 1fr 88px 1fr 1fr;max-width:480px;margin:auto;padding:0 8px env(safe-area-inset-bottom);background:var(--bar);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-top:1px solid var(--ln)}
+.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;height:64px;background:none;border:0;color:var(--mu);font:inherit;transition:transform .15s,color .15s}
+.tab:active{transform:scale(.94)}
+.tab svg{width:24px;height:24px}
+.tab.on{color:var(--ac)}
+.micw{position:relative}
+.mic{position:absolute;left:50%;top:-32px;margin-left:-36px;width:72px;height:72px;border-radius:50%;border:4px solid var(--bg);background:var(--ac);color:var(--on);display:grid;place-items:center;transition:transform .15s;animation:br 2.4s ease-out infinite}
 @keyframes br{0%{box-shadow:0 0 0 0 var(--ring)}70%,100%{box-shadow:0 0 0 20px transparent}}
 .mic:active{transform:scale(.94)}
 .mic svg{width:32px;height:32px}
 .link{background:none;border:0;color:var(--mu);font:inherit;min-height:44px;padding:0 16px;text-decoration:underline}
 .arrow{display:block;width:32px;height:32px;margin:24px auto 0;color:var(--ac);animation:bo 1.4s ease-in-out infinite}
 @keyframes bo{50%{transform:translateY(8px)}}
-dialog{border:0;border-radius:16px;background:var(--card);color:var(--tx);width:calc(100% - 32px);max-width:448px;padding:24px 16px;margin:auto auto 16px}
+dialog{border:0;border-radius:24px;background:var(--card);color:var(--tx);width:calc(100% - 32px);max-width:448px;padding:16px 16px 24px;margin:auto auto 16px;box-shadow:0 8px 32px rgba(0,0,0,.2)}
+dialog[open]{animation:sheet .25s ease both}
+dialog::before{content:"";display:block;width:40px;height:4px;border-radius:2px;background:var(--ln);margin:0 auto 16px}
 dialog::backdrop{background:rgba(0,0,0,.45)}
 .acts{display:flex;gap:8px;margin-top:24px}.acts .btn{flex:1;padding:0 8px}
 .wave{display:flex;justify-content:center;align-items:center;gap:8px;height:56px;margin:24px 0}
@@ -71,57 +80,64 @@ select,input{font:inherit;color:inherit;width:100%;min-height:48px;border:1px so
 <body>
 <div class="top"><span class="logo"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><b class="h">AGRI-MARGE</b></div>
 
-<section class="hero" aria-live="polite">
-  <p id="sub" class="h">Ton bilan</p>
-  <div id="sk" class="sk"></div>
-  <p id="big" class="big hide"><span id="bn">0</span><small> F</small></p>
-  <div id="err" class="hide"><p id="errt"></p><button class="btn" id="retry" style="margin-top:16px">Réessayer</button></div>
-</section>
+<main class="view" id="v-carnet">
+  <section class="hero" aria-live="polite">
+    <div class="field" aria-hidden="true"></div>
+    <p id="sub" class="h">Ton bilan</p>
+    <div id="sk" class="sk"></div>
+    <p id="big" class="big hide"><span id="bn">0</span><small> F</small></p>
+    <div id="err" class="hide"><p id="errt"></p><button class="btn" id="retry" style="margin-top:16px">Réessayer</button></div>
+  </section>
 
-<button class="btn o" id="sell">Je vends</button>
+  <section class="card hide" id="kilo" aria-live="polite">
+    <div id="kbox"></div>
+    <p class="mu" id="kn" style="margin-top:8px"></p>
+  </section>
 
-<section class="card hide" id="kilo" aria-live="polite">
-  <div id="kbox"></div>
-  <p class="mu" id="kn" style="margin-top:8px"></p>
-</section>
+  <section class="sec hide" id="empty">
+    <p class="h">Rien d'enregistré</p>
+    <p class="mu" style="margin-top:8px">Touche le micro et dis ta première dépense, par exemple le labour.</p>
+    <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
+  </section>
 
-<section class="sec hide" id="empty">
-  <p class="h">Rien d'enregistré</p>
-  <p class="mu" style="margin-top:8px">Touche le micro et dis ta première dépense, par exemple le labour.</p>
-  <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
-</section>
+  <section class="sec hide" id="detail">
+    <p class="h">D'où part l'argent</p>
+    <div class="row2"><div class="rl"><span>Dépenses</span><b id="d"></b></div><i class="gauge"><u id="gd"></u></i></div>
+    <div class="row2"><div class="rl"><span>Récolte (valeur)</span><b id="r"></b></div><i class="gauge"><u id="gr"></u></i></div>
+    <div class="row2"><div class="rl"><span>Pertes (manque à gagner)</span><b id="p"></b></div><i class="gauge"><u id="gp"></u></i></div>
+    <button class="link" id="shareb" style="margin-top:8px;padding-left:0">Envoyer mon bilan sur WhatsApp</button>
+  </section>
 
-<section class="sec hide" id="detail">
-  <p class="h">D'où part l'argent</p>
-  <div class="row2"><div class="rl"><span>Dépenses</span><b id="d"></b></div><i class="gauge"><u id="gd"></u></i></div>
-  <div class="row2"><div class="rl"><span>Récolte (valeur)</span><b id="r"></b></div><i class="gauge"><u id="gr"></u></i></div>
-  <div class="row2"><div class="rl"><span>Pertes (manque à gagner)</span><b id="p"></b></div><i class="gauge"><u id="gp"></u></i></div>
-</section>
+  <section class="sec hide" id="list"><p class="h">Derniers ajouts</p><p class="mu" style="margin-top:8px">Touche une ligne pour l'effacer.</p><div id="items"></div></section>
 
-<section class="sec hide" id="list"><p class="h">Derniers ajouts</p><p class="mu" style="margin-top:8px">Touche une ligne pour l'effacer.</p><div id="items"></div></section>
+  <p class="mu" id="legal" style="margin-top:40px">Ta voix est envoyée à un service de transcription pour être écrite ; l'app ne garde que les chiffres. Pour la météo, ta position approximative est envoyée à Open-Meteo ; l'app ne la garde pas. Ton carnet est lié à ce téléphone : si tu changes de téléphone ou effaces le navigateur, il est perdu.</p>
+</main>
 
-<section class="sec" id="meteo">
-  <p class="h">Pluie à venir</p>
-  <p class="mu" id="mt" style="margin-top:8px">Vois les prévisions de pluie autour de toi.</p>
-  <div id="mb"></div>
-  <button class="btn o" id="mgo">Voir la pluie prévue</button>
-  <p class="mu hide" id="msrc" style="margin-top:16px">Source : <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo.com</a>. Ce sont des prévisions, pas des certitudes.</p>
-</section>
+<main class="view hide" id="v-pluie">
+  <section class="sec" style="margin-top:0">
+    <p class="h">Pluie à venir</p>
+    <p class="mu" id="mt" style="margin-top:8px">Vois les prévisions de pluie autour de toi.</p>
+    <div id="mb"></div>
+    <button class="btn o" id="mgo">Voir la pluie prévue</button>
+    <p class="mu hide" id="msrc" style="margin-top:16px">Source : <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo.com</a>. Ce sont des prévisions, pas des certitudes.</p>
+  </section>
+</main>
 
-<p class="mu" id="legal" style="margin-top:40px">Ta voix est envoyée à un service de transcription pour être écrite ; l'app ne garde que les chiffres. Pour la météo, ta position approximative est envoyée à Open-Meteo ; l'app ne la garde pas. Ton carnet est lié à ce téléphone : si tu changes de téléphone ou effaces le navigateur, il est perdu.</p>
-
-<div class="bar">
-  <button class="mic" id="mic" aria-label="Parler"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/></svg></button>
-  <button class="link" id="type">Taper à la place</button>
-</div>
+<nav class="tabs" aria-label="Navigation">
+  <button class="tab on" id="tcar" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6"/></svg><span>Carnet</span></button>
+  <button class="tab" id="tpl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 15a4 4 0 0 1-.5-7.97A5.5 5.5 0 0 1 17.2 7 3.5 3.5 0 0 1 17 15H7z"/><path d="M9 18l-1 3M13 18l-1 3M17 18l-1 3"/></svg><span>Pluie</span></button>
+  <div class="micw"><button class="mic" id="mic" aria-label="Parler"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/></svg></button></div>
+  <button class="tab" id="sell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg><span>Vendre</span></button>
+  <button class="tab" id="type"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z"/></svg><span>Taper</span></button>
+</nav>
 <div id="toast" role="status"></div>
 
 <dialog id="dlg">
   <div id="v-rec" class="v hide"><p class="h">Je t'écoute…</p><div class="wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div><p class="mu">Parle, puis touche « Terminer ».</p>
     <div class="acts"><button class="btn s" id="rcancel">Annuler</button><button class="btn" id="rstop">Terminer</button></div></div>
   <div id="v-wait" class="v hide"><p class="h">Je comprends…</p><div class="sk" style="margin-top:16px"></div><div class="sk" style="width:50%"></div></div>
-  <div id="v-ok" class="v hide"><p class="mu">Tu as dit</p><p id="said"></p><p class="h" id="what" style="margin:16px 0 8px"></p><label for="cu">Quelle culture ?</label><select id="cu"></select><p style="margin-top:16px">C'est bon ?</p>
-    <div class="acts"><button class="btn s" id="fix">Corriger</button><button class="btn" id="yes">Oui, enregistrer</button></div></div>
+  <div id="v-ok" class="v hide"><p class="mu">Tu as dit</p><p id="said"></p><div id="what" style="margin:16px 0 8px"></div><p class="mu hide" id="vnote" style="margin-bottom:8px"></p><label for="cu">Quelle culture ?</label><select id="cu"></select><p style="margin-top:16px">C'est bon ?</p>
+    <div class="acts"><button class="btn s" id="fix">Corriger</button><button class="btn s hide" id="redo">Refaire</button><button class="btn" id="yes">Oui, enregistrer</button></div></div>
   <div id="v-err" class="v hide"><p id="errm"></p>
     <div class="acts"><button class="btn s" id="e-type">Taper</button><button class="btn" id="e-again">Réessayer</button></div></div>
   <div id="v-del" class="v hide"><p class="h">Effacer cette ligne ?</p><p id="delt" style="margin-top:16px"></p>
@@ -140,7 +156,7 @@ select,input{font:inherit;color:inherit;width:100%;min-height:48px;border:1px so
   </form>
   <form id="v-sell" class="v hide">
     <p class="h">Je vends</p>
-    <p class="mu" style="margin-top:8px">Je prépare le message. Tu choisis à qui l'envoyer sur WhatsApp.</p>
+    <p class="mu" style="margin-top:8px">Je prépare le message. Tu choisis à qui l'envoyer sur WhatsApp. Si tu as déjà vendu une partie, change la quantité.</p>
     <label for="sp">Produit</label>
     <input id="sp" type="text" maxlength="30" placeholder="Maïs" autocomplete="off">
     <label for="sk2">Quantité (kg)</label>
@@ -150,7 +166,7 @@ select,input{font:inherit;color:inherit;width:100%;min-height:48px;border:1px so
     <p id="serr" class="hide" style="margin-top:16px" role="alert"></p>
     <div class="acts"><button type="button" class="btn s" id="scancel">Annuler</button><button class="btn" type="submit">Envoyer sur WhatsApp</button></div>
   </form>
-  </dialog>
+    </dialog>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
 const sb = supabase.createClient("https://cpfwlkawfibxbscbrckm.supabase.co", "sb_publishable_KJBo_HeYBlDpR6QKC1pnyQ_taqrJm3q");
@@ -170,7 +186,20 @@ function derniere(){ try { return localStorage.getItem("cult") || ""; } catch(e)
 function retenir(c){ try { if (c) localStorage.setItem("cult", c); } catch(e) {} }
 const LBL = {}; Object.values(CATS).flat().forEach(([v,l])=>LBL[v]=l);
 remplir($("#cu")); remplir($("#cu2"));
-let shown = 0, cur = null, rec = null, stream = null, chunks = [], annule = false, stopT = null, delId = null;
+let shown = 0, cur = [], rec = null, stream = null, chunks = [], annule = false, stopT = null, delId = null, STOCK = null, LAST = null;
+
+/* ---- Onglets ---- */
+function vue(v){
+  $("#v-carnet").classList.toggle("hide", v!=="carnet");
+  $("#v-pluie").classList.toggle("hide", v!=="pluie");
+  for (const [id,k] of [["tcar","carnet"],["tpl","pluie"]]) {
+    const t=$("#"+id); t.classList.toggle("on", v===k);
+    if (v===k) t.setAttribute("aria-current","page"); else t.removeAttribute("aria-current");
+  }
+  window.scrollTo({top:0});
+}
+$("#tcar").addEventListener("click", ()=>vue("carnet"));
+$("#tpl").addEventListener("click", ()=>vue("pluie"));
 
 function nom(m){ return (m.type==="recolte" ? "Récolte" : TYPES[m.type]+" · "+LBL[m.categorie])+(m.culture&&CL[m.culture]?" · "+CL[m.culture]:""); }
 function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("on");setTimeout(()=>e.classList.remove("on"),2500)}
@@ -207,6 +236,7 @@ async function charger(){
   const rows = l.data || [], vide = rows.length === 0;
   const dep = Number(b.data?.depenses||0), rec_ = Number(b.data?.valeur_recolte||0), per = Number(b.data?.valeur_pertes||0);
   const bilan = rec_ - dep;
+  LAST = {dep, rec_, per, bilan};
   count(vide ? 0 : bilan);
   $("#sub").textContent = vide ? "Ton bilan" : bilan > 0 ? "Tu gagnes" : bilan < 0 ? "Tu perds" : "Ni gain ni perte";
   $("#d").textContent=F(dep); $("#r").textContent=F(rec_); $("#p").textContent=F(per);
@@ -237,6 +267,11 @@ async function charger(){
   }
   $("#kilo").classList.toggle("hide", !nk);
 
+  /* Pré-remplissage de « Vendre » : la culture dont la récolte est la plus grosse. */
+  STOCK = null; let best = null;
+  for (const [c,o] of Object.entries(G)) if (o.k>0 && (!best || o.k>best[1].k)) best=[c,o];
+  if (best) STOCK = {produit: best[0] ? CL[best[0]] : "", kg: Math.round(best[1].k*100)/100, prix: Math.round(best[1].v/best[1].k)};
+
   $("#empty").classList.toggle("hide", !vide);
   $("#detail").classList.toggle("hide", vide);
   $("#list").classList.toggle("hide", vide);
@@ -254,12 +289,20 @@ async function charger(){
 
 async function enregistrer(row, btn){
   const old = btn.textContent; btn.disabled=true; btn.textContent="Enregistrement…";
-  const {error}=await sb.from("mouvements").insert(row);
+  const lignes = Array.isArray(row) ? row : [row];
+  const {error}=await sb.from("mouvements").insert(lignes);
   btn.disabled=false; btn.textContent=old;
   if (error) return false;
-  retenir(row.culture);
-  $("#dlg").close(); toast("Enregistré"); charger(); return true;
+  retenir(lignes.map(r=>r.culture).filter(Boolean).pop());
+  $("#dlg").close(); toast("Enregistré"); vue("carnet"); charger(); return true;
 }
+
+/* ---- Envoyer mon bilan (copie écrite des totaux, pas une sauvegarde) ---- */
+$("#shareb").addEventListener("click", ()=>{
+  if (!LAST) return;
+  const msg = "Mon bilan AGRI-MARGE du "+new Date().toLocaleDateString("fr-FR")+" : "+(LAST.bilan>=0?"je gagne ":"je perds ")+F(Math.abs(LAST.bilan))+". Dépenses : "+F(LAST.dep)+". Récolte : "+F(LAST.rec_)+". Pertes (manque à gagner) : "+F(LAST.per)+".";
+  window.open("https://wa.me/?text="+encodeURIComponent(msg), "_blank", "noopener");
+});
 
 /* ---- Effacer une ligne ---- */
 $("#dno").addEventListener("click", ()=>$("#dlg").close());
@@ -300,9 +343,11 @@ $("#v-form").addEventListener("submit", async e=>{
   if (!(await enregistrer(row, $("#save")))) { fe.textContent="Échec de l'enregistrement. Réessaie."; fe.classList.remove("hide"); }
 });
 
-/* ---- Je vends (message WhatsApp, rien n'est enregistré) ---- */
+/* ---- Vendre (message WhatsApp, rien n'est enregistré) ---- */
 $("#sell").addEventListener("click", ()=>{
-  $("#v-sell").reset(); $("#serr").classList.add("hide"); voir("v-sell");
+  $("#v-sell").reset(); $("#serr").classList.add("hide");
+  if (STOCK) { $("#sp").value=STOCK.produit; $("#sk2").value=STOCK.kg; $("#sx").value=STOCK.prix; }
+  voir("v-sell");
 });
 $("#scancel").addEventListener("click", ()=>$("#dlg").close());
 $("#v-sell").addEventListener("submit", e=>{
@@ -374,6 +419,19 @@ async function demarrer_micro(){
   rec.start(); voir("v-rec");
   stopT=setTimeout(arreter, 20000);
 }
+function ligneOk(m){ return m.type==="depense" ? !!m.montant_fcfa : !!(m.quantite_kg && m.prix_kg_fcfa); }
+function confirmer(lots, manque, dit){
+  cur = lots;
+  const w=$("#what"); w.replaceChildren();
+  for (const m of lots) { const p=document.createElement("p"); p.className="h"; p.style.marginBottom="8px"; p.textContent=texte(m); w.append(p); }
+  const vn=$("#vnote"); vn.textContent = manque===1 ? "J'ai ignoré 1 ligne sans chiffre." : "J'ai ignoré "+manque+" lignes sans chiffre."; vn.classList.toggle("hide", !manque);
+  $("#cu").value = (lots.length===1 && lots[0].culture) || derniere();
+  $("#fix").classList.toggle("hide", lots.length>1);
+  $("#redo").classList.toggle("hide", lots.length===1);
+  $("#yes").textContent = lots.length>1 ? "Oui, tout enregistrer" : "Oui, enregistrer";
+  $("#said").textContent = dit;
+  voir("v-ok");
+}
 async function envoyer(){
   if (annule) return;
   voir("v-wait");
@@ -391,10 +449,14 @@ async function envoyer(){
     if (!r.ok) throw new Error("http");
     const j = await r.json();
     if (!j.texte) { $("#errm").textContent="Je n'ai rien entendu. Réessaie."; return voir("v-err"); }
-    if (!j.mouvement) { $("#errm").textContent="Je n'ai pas compris : « "+j.texte+" ». Réessaie ou tape."; return voir("v-err"); }
-    const m=j.mouvement, ok = m.type==="depense" ? m.montant_fcfa : (m.quantite_kg && m.prix_kg_fcfa);
-    if (!ok) return formulaire(m, "Il manque un chiffre. Complète-le.");
-    cur=m; $("#cu").value=m.culture||derniere(); $("#said").textContent=j.texte; $("#what").textContent=texte(m); voir("v-ok");
+    const L = (Array.isArray(j.mouvements) ? j.mouvements : (j.mouvement ? [j.mouvement] : [])).slice(0,5);
+    if (!L.length) { $("#errm").textContent="Je n'ai pas compris : « "+j.texte+" ». Réessaie ou tape."; return voir("v-err"); }
+    const ok = L.filter(ligneOk);
+    if (!ok.length) {
+      if (L.length===1) return formulaire(L[0], "Il manque un chiffre. Complète-le.");
+      $("#errm").textContent="Je n'ai pas compris les chiffres. Réessaie ou tape."; return voir("v-err");
+    }
+    confirmer(ok, L.length-ok.length, j.texte);
   } catch(e){
     clearTimeout(to);
     $("#errm").textContent="Réseau faible ou service indisponible. Réessaie, ou tape à la place."; voir("v-err");
@@ -406,10 +468,12 @@ $("#rcancel").addEventListener("click", ()=>{ annule=true; arreter(); $("#dlg").
 $("#dlg").addEventListener("close", ()=>{ if(rec && rec.state==="recording"){ annule=true; arreter(); } });
 $("#e-type").addEventListener("click", ()=>formulaire(null));
 $("#e-again").addEventListener("click", demarrer_micro);
-$("#fix").addEventListener("click", ()=>{ cur.culture=$("#cu").value||null; formulaire(cur); });
+$("#redo").addEventListener("click", demarrer_micro);
+$("#fix").addEventListener("click", ()=>formulaire({...cur[0], culture:$("#cu").value||null}));
 $("#yes").addEventListener("click", async ()=>{
-  cur.culture=$("#cu").value||null;
-  if (!(await enregistrer(cur, $("#yes")))) { $("#errm").textContent="Échec de l'enregistrement. Réessaie."; voir("v-err"); }
+  const s=$("#cu").value||null;
+  const rows=cur.map(m=>({...m, culture: cur.length===1 ? s : (m.culture||s)}));
+  if (!(await enregistrer(rows, $("#yes")))) { $("#errm").textContent="Échec de l'enregistrement. Réessaie."; voir("v-err"); }
 });
 $("#retry").addEventListener("click", demarrer);
 
@@ -424,4 +488,5 @@ async function demarrer(){
 demarrer();
 </script>
 </body>
-  </html>
+</html>
+                                                                         
