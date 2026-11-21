@@ -48,6 +48,24 @@ button.row:active{opacity:.6}
 .btn:disabled{opacity:.6}
 .btn.s{background:transparent;color:var(--mu)}
 .btn.o{background:transparent;color:var(--ac);border:1px solid var(--ac);width:100%;margin-top:16px}
+.btn.l{background:var(--hon);color:var(--hero);width:100%}
+.pbig{display:flex;align-items:center;gap:16px;margin-top:8px}
+.pbig .big{margin-top:0}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px}
+.tile{display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 8px;min-height:44px;background:var(--card);border:2px solid transparent;border-radius:16px;color:var(--ac);font:inherit;box-shadow:0 2px 12px rgba(0,0,0,.06);transition:transform .15s,border-color .15s}
+.tile:active{transform:scale(.96)}
+.tile.on{border-color:var(--ac)}
+.tile span{color:var(--mu)}
+.tile b{color:var(--tx);font-size:20px;font-weight:600}
+.parts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px;text-align:center}
+.part{display:flex;flex-direction:column;align-items:center;gap:4px}
+.pbar{height:96px;width:100%;max-width:56px;background:var(--ln);border-radius:12px;display:flex;align-items:flex-end;overflow:hidden;margin-bottom:8px}
+.pbar u{display:block;width:100%;height:0;background:var(--ac);border-radius:12px;transition:height .3s ease}
+.part b{font-size:20px;font-weight:600}
+details.card summary{min-height:44px;display:flex;align-items:center;font-weight:600;cursor:pointer;list-style:none}
+details.card summary::-webkit-details-marker{display:none}
+details.card summary::after{content:"+";margin-left:auto;font-size:20px;color:var(--mu)}
+details.card[open] summary::after{content:"−"}
 .tabs{position:fixed;left:0;right:0;bottom:0;display:grid;grid-template-columns:1fr 1fr 88px 1fr 1fr;max-width:480px;margin:auto;padding:0 8px env(safe-area-inset-bottom);background:var(--bar);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-top:1px solid var(--ln)}
 .tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;height:64px;background:none;border:0;color:var(--mu);font:inherit;transition:transform .15s,color .15s}
 .tab:active{transform:scale(.94)}
@@ -114,13 +132,35 @@ select,input{font:inherit;color:inherit;width:100%;min-height:48px;border:1px so
 </main>
 
 <main class="view hide" id="v-pluie">
-  <section class="sec" style="margin-top:0">
-    <p class="h">Pluie à venir</p>
-    <p class="mu" id="mt" style="margin-top:8px">Vois les prévisions de pluie autour de toi.</p>
-    <div id="mb"></div>
-    <button class="btn o" id="mgo">Voir la pluie prévue</button>
-    <p class="mu hide" id="msrc" style="margin-top:16px">Source : <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo.com</a>. Ce sont des prévisions, pas des certitudes.</p>
+  <section class="hero" aria-live="polite">
+    <div class="field" aria-hidden="true"></div>
+    <div id="pinit">
+      <p class="h">Pluie à venir</p>
+      <p id="mt" style="margin-top:8px;opacity:.85">Vois les prévisions de pluie autour de toi.</p>
+    </div>
+    <div id="pday" class="hide">
+      <p class="h" id="pnm"></p>
+      <div class="pbig"><span id="pdrop"></span><p class="big" id="pn">—</p></div>
+      <p id="pu" style="opacity:.85">chances sur 100 qu'il pleuve</p>
+    </div>
+    <button class="btn l" id="mgo" style="margin-top:24px">Voir la pluie prévue</button>
   </section>
+
+  <div class="tiles hide" id="ptiles"></div>
+
+  <section class="card hide" id="pdet">
+    <p class="h" style="padding-top:8px">Dans la journée</p>
+    <p class="mu">Chances de pluie, sur 100</p>
+    <div class="parts" id="pparts"></div>
+    <div class="row" style="border-bottom:0;margin-top:8px"><span>Eau attendue</span><b id="pmm"></b></div>
+  </section>
+
+  <details class="card" id="paide">
+    <summary>Comment lire ces chiffres ?</summary>
+    <p class="mu" style="margin-top:8px">Le grand chiffre dit combien de chances sur 100 il y a qu'il pleuve : plus il est haut, plus il y a de chances. Les barres montrent le moment : matin de 6 h à 12 h, après-midi de 12 h à 18 h, soir de 18 h à minuit. Pour l'eau, 1 mm veut dire 1 litre sur chaque mètre carré. Une prévision n'est pas une certitude.</p>
+  </details>
+
+  <p class="mu hide" id="msrc" style="margin-top:16px">Source : <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo.com</a>.</p>
 </main>
 
 <nav class="tabs" aria-label="Navigation">
@@ -166,8 +206,9 @@ select,input{font:inherit;color:inherit;width:100%;min-height:48px;border:1px so
     <p id="serr" class="hide" style="margin-top:16px" role="alert"></p>
     <div class="acts"><button type="button" class="btn s" id="scancel">Annuler</button><button class="btn" type="submit">Envoyer sur WhatsApp</button></div>
   </form>
-    </dialog>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+</dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
 const sb = supabase.createClient("https://cpfwlkawfibxbscbrckm.supabase.co", "sb_publishable_KJBo_HeYBlDpR6QKC1pnyQ_taqrJm3q");
 const $ = s => document.querySelector(s);
@@ -284,10 +325,9 @@ async function charger(){
     r.append(a,v);
     r.addEventListener("click", ()=>{ delId=x.id; $("#delt").textContent=texte(x); voir("v-del"); });
     box.append(r);
-  }
+   }
 }
-
-async function enregistrer(row, btn){
+ async function enregistrer(row, btn){
   const old = btn.textContent; btn.disabled=true; btn.textContent="Enregistrement…";
   const lignes = Array.isArray(row) ? row : [row];
   const {error}=await sb.from("mouvements").insert(lignes);
@@ -361,39 +401,86 @@ $("#v-sell").addEventListener("submit", e=>{
 });
 
 /* ---- Pluie à venir (Open-Meteo, données seulement, aucun conseil) ---- */
+let DAYS = [], SEL = 0;
+const NF1 = new Intl.NumberFormat("fr-FR",{maximumFractionDigits:1});
+const NOMS = ["Aujourd'hui","Demain","Après-demain"];
+const pc = v => (v==null || !Number.isFinite(Number(v))) ? null : Math.max(0, Math.min(100, Math.round(Number(v))));
+function maxi(a,i,j){ const v=a.slice(i,j).filter(x=>x!=null).map(Number).filter(Number.isFinite); return v.length ? Math.max(...v) : null; }
+function goutte(id,p,size){
+  const v = (p==null ? 0 : p) / 100;
+  return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="'+id+'" x1="0" y1="1" x2="0" y2="0"><stop offset="'+v+'" stop-color="currentColor"/><stop offset="'+v+'" stop-color="currentColor" stop-opacity="0"/></linearGradient></defs><path d="M12 2.5C12 2.5 5 10 5 14.5a7 7 0 0 0 14 0C19 10 12 2.5 12 2.5z" fill="url(#'+id+')" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>';
+}
+function rendu(){
+  const x = DAYS[SEL]; if (!x) return;
+  $("#pnm").textContent = NOMS[SEL];
+  $("#pn").textContent = x.pr==null ? "—" : x.pr;
+  $("#pdrop").innerHTML = goutte("gh", x.pr, 56);
+  document.querySelectorAll(".tile").forEach((t,i)=>{ t.classList.toggle("on", i===SEL); t.setAttribute("aria-pressed", i===SEL ? "true" : "false"); });
+  const pp = $("#pparts"); pp.replaceChildren();
+  $("#pparts").classList.toggle("hide", !x.parts);
+  if (x.parts) {
+    [["Matin","6–12 h",x.parts[0]],["Après-midi","12–18 h",x.parts[1]],["Soir","18–24 h",x.parts[2]]].forEach(([nm,h,v])=>{
+      const c=document.createElement("div"); c.className="part";
+      const bar=document.createElement("div"); bar.className="pbar"; bar.setAttribute("aria-hidden","true");
+      const u=document.createElement("u"); bar.append(u);
+      const b=document.createElement("b"); b.textContent = v==null ? "—" : v;
+      const s=document.createElement("span"); s.textContent=nm;
+      const hh=document.createElement("span"); hh.className="mu"; hh.textContent=h;
+      c.append(bar,b,s,hh); pp.append(c);
+      requestAnimationFrame(()=>{ u.style.height = (v==null ? 0 : v) + "%"; });
+    });
+  }
+  $("#pmm").textContent = x.mm==null ? "—" : NF1.format(x.mm) + " mm";
+}
+function afficherPluie(){
+  $("#pinit").classList.add("hide"); $("#pday").classList.remove("hide");
+  const t=$("#ptiles"); t.replaceChildren();
+  DAYS.forEach((x,i)=>{
+    const b=document.createElement("button"); b.type="button"; b.className="tile";
+    const s=document.createElement("span"); s.textContent=x.jour;
+    const g=document.createElement("div"); g.innerHTML=goutte("gt"+i, x.pr, 32);
+    const n=document.createElement("b"); n.textContent = x.pr==null ? "—" : x.pr;
+    b.append(s,g,n);
+    b.addEventListener("click", ()=>{ SEL=i; rendu(); });
+    t.append(b);
+  });
+  t.classList.remove("hide"); $("#pdet").classList.remove("hide"); $("#msrc").classList.remove("hide");
+  SEL = 0; rendu();
+}
+function echecPluie(msg){
+  $("#pinit").classList.remove("hide"); $("#pday").classList.add("hide");
+  $("#ptiles").classList.add("hide"); $("#pdet").classList.add("hide");
+  $("#mt").textContent = msg;
+}
 $("#mgo").addEventListener("click", ()=>{
-  const b=$("#mgo"), mt=$("#mt"), mb=$("#mb");
-  if (!navigator.geolocation) { mt.textContent="Ce téléphone ne donne pas sa position."; return; }
-  b.disabled=true; b.textContent="Je cherche ta position…"; mb.replaceChildren();
+  const b=$("#mgo");
+  if (!navigator.geolocation) return echecPluie("Ce téléphone ne donne pas sa position.");
+  const garde = DAYS.length ? "Actualiser" : "Voir la pluie prévue";
+  b.disabled=true; b.textContent="Je cherche ta position…";
   const fin = t => { b.disabled=false; b.textContent=t; };
   navigator.geolocation.getCurrentPosition(async p=>{
     const ctl=new AbortController(), to=setTimeout(()=>ctl.abort(), 10000);
     try {
       const la=p.coords.latitude.toFixed(2), lo=p.coords.longitude.toFixed(2);
-      const r=await fetch("https://api.open-meteo.com/v1/forecast?latitude="+la+"&longitude="+lo+"&daily=precipitation_probability_max,precipitation_sum&forecast_days=3&timezone=auto",{signal:ctl.signal});
+      const r=await fetch("https://api.open-meteo.com/v1/forecast?latitude="+la+"&longitude="+lo+"&daily=precipitation_probability_max,precipitation_sum&hourly=precipitation_probability&forecast_days=3&timezone=auto",{signal:ctl.signal});
       clearTimeout(to);
       if (!r.ok) throw new Error("http");
-      const d=(await r.json()).daily;
+      const j=await r.json(), d=j.daily, h=(j.hourly && j.hourly.precipitation_probability) || [];
       if (!d || !Array.isArray(d.time)) throw new Error("data");
-      ["Aujourd'hui","Demain","Après-demain"].forEach((nm,i)=>{
-        if (d.time[i]===undefined) return;
-        const pr=d.precipitation_probability_max?.[i], mm=d.precipitation_sum?.[i];
-        const row=document.createElement("div"); row.className="row";
-        const s=document.createElement("span"); s.textContent=nm;
-        const v=document.createElement("b");
-        v.textContent=(pr==null?"—":pr+" % de pluie")+" · "+(mm==null?"—":new Intl.NumberFormat("fr-FR",{maximumFractionDigits:1}).format(mm)+" mm");
-        row.append(s,v); mb.append(row);
-      });
-      mt.textContent="Prévisions pour ta zone, sur 3 jours.";
-      $("#msrc").classList.remove("hide");
-      fin("Actualiser");
-    } catch(e) { clearTimeout(to); mt.textContent="Impossible d'avoir la météo. Vérifie ton réseau et réessaie."; fin("Réessayer"); }
+      DAYS = [0,1,2].filter(i=>d.time[i]!==undefined).map(i=>({
+        jour: new Date(d.time[i]+"T12:00:00").toLocaleDateString("fr-FR",{weekday:"short"}).replace(".",""),
+        pr: pc(d.precipitation_probability_max?.[i]),
+        mm: d.precipitation_sum?.[i]==null ? null : Number(d.precipitation_sum[i]),
+        parts: h.length>=i*24+24 ? [maxi(h,i*24+6,i*24+12), maxi(h,i*24+12,i*24+18), maxi(h,i*24+18,i*24+24)].map(pc) : null
+      }));
+      if (!DAYS.length) throw new Error("data");
+      afficherPluie(); fin("Actualiser");
+    } catch(e) { clearTimeout(to); DAYS=[]; echecPluie("Impossible d'avoir la météo. Vérifie ton réseau et réessaie."); fin("Réessayer"); }
   }, err=>{
-    mt.textContent = err.code===1 ? "Position refusée. Autorise la position pour ce site, puis réessaie." : "Position introuvable. Réessaie.";
-    fin("Voir la pluie prévue");
+    echecPluie(err.code===1 ? "Position refusée. Autorise la position pour ce site, puis réessaie." : "Position introuvable. Réessaie.");
+    fin(garde);
   }, {timeout:10000, maximumAge:600000});
 });
-
 /* ---- Voix ---- */
 function arreter(){
   clearTimeout(stopT);
@@ -485,53 +572,7 @@ async function demarrer(){
     await charger();
   } catch(e) { erreur("Connexion impossible. Réessaie."); }
 }
-/* ---- Pluie : version claire (remplace le bloc précédent) ---- */
-(function(){
-  const vieux=$("#mgo"), b=vieux.cloneNode(true); vieux.replaceWith(b);
-  const mt=$("#mt"), mb=$("#mb");
-  const AIDE="Chances de pluie, sur 100 : plus le nombre est haut, plus il y a de chances qu'il pleuve. Matin = 6 h à 12 h, après-midi = 12 h à 18 h, soir = 18 h à minuit. 1 mm d'eau = 1 litre sur chaque mètre carré.";
-  const nf=new Intl.NumberFormat("fr-FR",{maximumFractionDigits:1});
-  const maxi=(a,i,j)=>{const v=a.slice(i,j).filter(x=>x!=null);return v.length?Math.max(...v):null};
-  const ligne=(txt,mu,haut)=>{const p=document.createElement("p");p.textContent=txt;p.style.marginTop="8px";if(mu)p.className="mu";if(haut)p.style.fontWeight="600";return p};
-  b.addEventListener("click",()=>{
-    if(!navigator.geolocation){mt.textContent="Ce téléphone ne donne pas sa position.";return}
-    b.disabled=true;b.textContent="Je cherche ta position…";mb.replaceChildren();
-    const fin=t=>{b.disabled=false;b.textContent=t};
-    navigator.geolocation.getCurrentPosition(async p=>{
-      const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),10000);
-      try{
-        const la=p.coords.latitude.toFixed(2),lo=p.coords.longitude.toFixed(2);
-        const r=await fetch("https://api.open-meteo.com/v1/forecast?latitude="+la+"&longitude="+lo+"&daily=precipitation_probability_max,precipitation_sum&hourly=precipitation_probability&forecast_days=3&timezone=auto",{signal:ctl.signal});
-        clearTimeout(to);
-        if(!r.ok)throw new Error("http");
-        const j=await r.json(),d=j.daily,h=(j.hourly&&j.hourly.precipitation_probability)||[];
-        if(!d||!Array.isArray(d.time))throw new Error("data");
-        ["Aujourd'hui","Demain","Après-demain"].forEach((nm,i)=>{
-          if(d.time[i]===undefined)return;
-          const pr=d.precipitation_probability_max?.[i],mm=d.precipitation_sum?.[i];
-          const bloc=document.createElement("div");bloc.className="row2";
-          const t=document.createElement("p");t.className="h";t.textContent=nm;
-          bloc.append(t,
-            ligne(pr==null?"Chances de pluie : —":pr+(pr<=1?" chance":" chances")+" sur 100 qu'il pleuve",false,true),
-            ligne("Eau attendue : "+(mm==null?"—":nf.format(mm)+" mm"),false,false));
-          if(h.length>=i*24+24){
-            const m=maxi(h,i*24+6,i*24+12),a=maxi(h,i*24+12,i*24+18),s=maxi(h,i*24+18,i*24+24);
-            bloc.append(ligne("Matin "+(m??"—")+" · Après-midi "+(a??"—")+" · Soir "+(s??"—"),true,false));
-          }
-          mb.append(bloc);
-        });
-        mt.textContent=AIDE;
-        $("#msrc").classList.remove("hide");
-        fin("Actualiser");
-      }catch(e){clearTimeout(to);mt.textContent="Impossible d'avoir la météo. Vérifie ton réseau et réessaie.";fin("Réessayer")}
-    },err=>{
-      mt.textContent=err.code===1?"Position refusée. Autorise la position pour ce site, puis réessaie.":"Position introuvable. Réessaie.";
-      fin("Voir la pluie prévue");
-    },{timeout:10000,maximumAge:600000});
-  });
-})();
 demarrer();
 </script>
 </body>
 </html>
-                                                                         
