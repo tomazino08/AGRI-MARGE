@@ -524,12 +524,14 @@ async function envoyer(){
   voir("v-wait");
   const blob = new Blob(chunks,{type:rec.mimeType||"audio/webm"});
   if (blob.size < 1500) { $("#errm").textContent="Je n'ai rien entendu. Réessaie."; return voir("v-err"); }
-  const to = setTimeout(()=>ctl.abort(), 25000), ctl = new AbortController();
+    const ctl = new AbortController(), to = setTimeout(()=>ctl.abort(), 25000);
   try {
     const audio = await new Promise((ok,ko)=>{const r=new FileReader();r.onload=()=>ok(String(r.result).split(",")[1]);r.onerror=ko;r.readAsDataURL(blob)});
     const {data} = await sb.auth.getSession();
+    const jeton = data && data.session && data.session.access_token;
+    if (!jeton) { clearTimeout(to); $("#errm").textContent="Ta session a expiré. Recharge la page, puis réessaie."; return voir("v-err"); }
     const r = await fetch("/api/transcrire",{method:"POST",signal:ctl.signal,
-      headers:{"Content-Type":"application/json",Authorization:"Bearer "+data.session.access_token},
+      headers:{"Content-Type":"application/json",Authorization:"Bearer "+jeton},
       body:JSON.stringify({audio,mime:blob.type})});
     clearTimeout(to);
     if (r.status===429) { $("#errm").textContent="La limite du jour est atteinte. Tape à la place, ou reviens demain."; return voir("v-err"); }
