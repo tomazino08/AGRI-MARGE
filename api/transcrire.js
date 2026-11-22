@@ -89,6 +89,7 @@ module.exports = async (req, res) => {
           messages: [{ role: "system", content: CONSIGNE }, { role: "user", content: texte }],
         }),
       });
+            if (!c.ok) throw new Error("extraction");
       const raw = (await c.json()).choices?.[0]?.message?.content || "";
       const m = raw.match(/\{[\s\S]*\}/);
       if (m) {
