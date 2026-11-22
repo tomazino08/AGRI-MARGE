@@ -576,5 +576,19 @@ async function demarrer(){
 }
 demarrer();
 </script>
+<script>
+(function(){
+  var l=document.createElement("link"); l.rel="manifest"; l.href="/manifest.json"; document.head.appendChild(l);
+  var s=document.createElement("style");
+  s.textContent="#inst{margin-left:auto;min-height:44px;padding:0 16px;border:1px solid var(--ac);border-radius:14px;background:transparent;color:var(--ac);font:inherit;font-weight:600;transition:transform .15s,opacity .15s}#inst:active{transform:scale(.97)}";
+  document.head.appendChild(s);
+  var b=document.createElement("button"); b.id="inst"; b.type="button"; b.textContent="Installer"; b.className="hide";
+  document.querySelector(".top").appendChild(b);
+  var ev=null;
+  window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();ev=e;b.classList.remove("hide");});
+  b.addEventListener("click",async function(){ if(!ev) return; ev.prompt(); try{await ev.userChoice;}catch(x){} ev=null; b.classList.add("hide"); });
+  window.addEventListener("appinstalled",function(){b.classList.add("hide");});
+})();
+</script>
 </body>
 </html>
