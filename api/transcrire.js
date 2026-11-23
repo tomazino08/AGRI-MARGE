@@ -66,7 +66,7 @@ module.exports = async (req, res) => {
     fd.append("file", new Blob([Buffer.from(audio, "base64")], { type }), "voix." + ext);
     fd.append("model", "whisper-large-v3-turbo");
     fd.append("language", "fr");
-    fd.append("prompt", "Agriculture au Bénin, francs CFA, maïs, soja, manioc, igname, labour, semis, engrais, sacs, kilos.");
+    fd.append("prompt", "Agriculture au Bénin, francs CFA, maïs, soja, manioc, igname, labour, semis, engrais, sacs, kilos. Exemples : labour soixante-seize mille francs, semis soixante-dix mille cinq cents francs, engrais quatre-vingt-dix-sept mille francs.");
     fd.append("response_format", "json");
     const w = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
       method: "POST",
