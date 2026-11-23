@@ -56,4 +56,4 @@ GitHub, Vercel (hébergement), Supabase (base de données), Groq (voix en texte)
 
 ## Auteur
 
-Marths, étudiant en Mathématiques, Informatique et Applications, Abomey-Calavi (Bénin).
+HOUNTONDJI Comlan Marths Bestinel Tomazino, étudiant en Mathématiques, Informatique et Applications, à la faculté des sciences et techniques de l'université d'Abomey-Calavi (Bénin).
