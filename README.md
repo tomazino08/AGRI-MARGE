@@ -30,7 +30,7 @@ L'agriculteur **parle** au téléphone : « labour soixante-seize mille huit cen
 
 ## Ce que nous voulons faire ensuite
 
-Nous visons : utilisation sans internet, sauvegarde du compte pour changer de téléphone, langues locales, SMS, prix du marché, conseils agricoles de sources officielles. Rien de tout cela n'est fait aujourd'hui.
+Nous visons : utilisation sans internet, sauvegarde du compte pour changer de téléphone, langues locales, SMS, prix du marché, conseils agricoles de sources officielles, et un tableau de bord pour les unions de producteurs (chiffres regroupés, avec l'accord de chaque membre). Rien de tout cela n'est fait aujourd'hui.
 
 ## Ce que l'app ne fait pas
 
