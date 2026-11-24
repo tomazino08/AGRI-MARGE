@@ -33,7 +33,7 @@ const CONSIGNE =
   "Catégories : depense = labour, semis, herbicide, engrais, main_oeuvre, transport, autre ; perte = inondation, vol, pourriture, autre ; recolte = recolte. " +
   "depense utilise montant_fcfa (si une quantité et un prix unitaire sont dits, multiplie-les). recolte et perte utilisent quantite_kg et prix_kg_fcfa (convertis les tonnes en kg). " +
   "culture = mais, manioc, igname, haricot, arachide, soja, riz ou autre ; mets null si elle n'est pas dite, ne devine pas. " +
-  "N'invente JAMAIS un chiffre : si un chiffre n'est pas dit, mets null. Convertis les nombres dits en lettres en chiffres.";
+  "N'invente JAMAIS un chiffre : si un chiffre n'est pas dit, mets null. Convertis les nombres dits en lettres en chiffres. Règles : soixante-dix = 70, soixante-douze = 72, soixante-seize = 76, quatre-vingts = 80, quatre-vingt-dix = 90 ; « mille » multiplie par 1000 ; « cents » multiplie par 100.";
 
 module.exports = async (req, res) => {
   if (req.method !== "POST") return res.status(405).json({ error: "Méthode refusée" });
