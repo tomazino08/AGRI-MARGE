@@ -14,6 +14,40 @@ const CULTURES = ["mais", "manioc", "igname", "haricot", "arachide", "soja", "ri
 const argent = v => { const n = Math.round(Number(v)); return Number.isFinite(n) && n > 0 && n <= 1e9 ? n : null; };
 const kilos = v => { const n = Math.round(Number(v) * 100) / 100; return Number.isFinite(n) && n > 0 && n <= 1e6 ? n : null; };
 
+// DEBUT-NOMBRES : lit les nombres écrits en lettres ou en chiffres, sans IA.
+const UNITES = {
+  zero: 0, un: 1, une: 1, deux: 2, trois: 3, quatre: 4, cinq: 5, six: 6, sept: 7, huit: 8, neuf: 9,
+  dix: 10, onze: 11, douze: 12, treize: 13, quatorze: 14, quinze: 15, seize: 16,
+  vingt: 20, vingts: 20, trente: 30, quarante: 40, cinquante: 50, soixante: 60,
+};
+function nombresFr(texte) {
+  const sortie = [];
+  const t = String(texte).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const morceaux = t.match(/\d{1,3}(?:[ .\u00a0\u202f]\d{3})+|\d+|[a-z]+/g) || [];
+  let total = 0, courant = 0, actif = false, precedent = "", nbMots = 0, seulUn = false;
+  const finir = () => {
+    if (actif && !(nbMots === 1 && seulUn)) sortie.push(total + courant);
+    total = 0; courant = 0; actif = false; precedent = ""; nbMots = 0; seulUn = false;
+  };
+  for (const m of morceaux) {
+    if (/^\d/.test(m)) { finir(); sortie.push(parseInt(m.replace(/[ .\u00a0\u202f]/g, ""), 10)); continue; }
+    if (m === "et" && actif) continue;
+    if (m in UNITES) {
+      if ((m === "vingt" || m === "vingts") && precedent === "quatre") courant = courant - 4 + 80;
+      else courant += UNITES[m];
+      if (!actif) seulUn = (m === "un" || m === "une");
+      actif = true; nbMots++; precedent = m; continue;
+    }
+    if (m === "cent" || m === "cents") { courant = (courant === 0 ? 1 : courant) * 100; actif = true; nbMots++; seulUn = false; precedent = m; continue; }
+    if (m === "mille") { total += (courant === 0 ? 1 : courant) * 1000; courant = 0; actif = true; nbMots++; seulUn = false; precedent = m; continue; }
+    if (m === "million" || m === "millions") { total += (courant === 0 ? 1 : courant) * 1000000; courant = 0; actif = true; nbMots++; seulUn = false; precedent = m; continue; }
+    finir();
+  }
+  finir();
+  return sortie;
+}
+// FIN-NOMBRES
+
 function propre(o) {
   if (!o || !CAT[o.type]) return null;
   const dep = o.type === "depense";
@@ -89,7 +123,7 @@ module.exports = async (req, res) => {
           messages: [{ role: "system", content: CONSIGNE }, { role: "user", content: texte }],
         }),
       });
-            if (!c.ok) throw new Error("extraction");
+      if (!c.ok) throw new Error("extraction");
       const raw = (await c.json()).choices?.[0]?.message?.content || "";
       const m = raw.match(/\{[\s\S]*\}/);
       if (m) {
@@ -98,6 +132,13 @@ module.exports = async (req, res) => {
         mouvements = liste.slice(0, MAX_LIGNES).map(propre).filter(Boolean);
       }
     } catch (e) { mouvements = []; }
+
+    // 6. Contrôle des nombres : une seule dépense et un seul nombre dit, le nombre dit fait foi.
+    const dits = nombresFr(texte);
+    if (mouvements.length === 1 && mouvements[0].type === "depense" && dits.length === 1) {
+      const n = argent(dits[0]);
+      if (n) mouvements[0].montant_fcfa = n;
+    }
 
     return res.status(200).json({ texte, mouvements, mouvement: mouvements[0] || null });
   } catch (e) {
